@@ -1,0 +1,224 @@
+{
+  "version": 1,
+  "language": "zh",
+  "project": {
+    "name": "Codebase to Course(代码库变课程)",
+    "scenario": "目标用户是 vibe coder——用自然语言指挥 AI 写软件、没受过科班训练的人。他们做出了能跑的东西,或者在 GitHub 上看中了别人的开源项目,想真正搞懂它。",
+    "pain": "东西能跑,但完全不理解它底下怎么工作:没法判断 AI 是不是在胡说、AI 卡死时不知道怎么解围、和工程师聊技术发怵——想学,又啃不动教科书式的课程。",
+    "now": "对着任何仓库说一句话,就能拿到一门网页课程:滚动式章节、代码配人话对照、动画和测验,双击打开、离线可用,教你这个代码库到底怎么工作。"
+  },
+  "chain": ["skill", "analysis", "curriculum", "briefs", "assets", "modules", "build", "course"],
+  "nodes": {
+    "skill": {
+      "lane": "be",
+      "tool": "SKILL.md · Claude Code 技能",
+      "grade": "consequential",
+      "needs": [],
+      "feeds": ["analysis"],
+      "name": "总指挥说明书",
+      "role": "接到「把这个代码库变成课程」的请求后,指挥 AI 按四个阶段把课程从无到有做出来。",
+      "impact": [
+        "你不用会任何工具:对 Claude 说一句话就能拿到成品课程。",
+        "它规定「不给你看大纲、直接开建」——你第一眼看到的就是成品,不满意再改,省去来回审批。"
+      ],
+      "how": "在 AI 技能项目里,写给 AI 看的英文说明书就是代码本身。这份说明书规定了流水线的四个阶段:先读懂代码库,再设计课程结构,然后写各章内容,最后组装成网页打开。",
+      "fail": "说明书里某条规则写得含糊,AI 每次执行就会走样——表现为课程质量忽好忽坏,而不是程序报错。",
+      "code": [
+        {
+          "c": "### Phase 1: Codebase Analysis\n### Phase 2: Curriculum Design\n### Phase 2.5: Module Briefs (complex codebases only)\n### Phase 3: Build the Course\n### Phase 4: Review and Open",
+          "n": "四个阶段就是生产线本体:读代码 → 设计课程 → 写内容 → 组装打开。",
+          "risk": null
+        },
+        {
+          "c": "**Do NOT present the curriculum for approval — just build it.**\nThe user wants a course, not a planning document.",
+          "n": "一个关键决定被写死在说明书里:不先给你审大纲,直接做出成品。",
+          "risk": null
+        }
+      ],
+      "tradeoff": {
+        "a": "直接做出成品再改",
+        "b": "先给你一份课程大纲、你批准了再动工",
+        "cost": "如果 AI 对课程方向理解偏了,要整门课返工,浪费一轮生成时间和 AI 额度。",
+        "when": "如果你连续几次拿到的课程结构都不合意,就该把这条规则改成「先出大纲、你点头再建」。"
+      },
+      "tourHint": "第 1 站 · 总指挥:一句话请求进来,四个阶段跑完出一门课。"
+    },
+    "analysis": {
+      "lane": "be",
+      "tool": "Claude 通读代码库",
+      "grade": "routine",
+      "needs": ["skill"],
+      "feeds": ["curriculum"],
+      "name": "代码分析",
+      "role": "通读目标代码库:找出主要组件、追踪数据怎么流动、认出技术栈和其中的巧妙设计。",
+      "impact": [
+        "读得越透,课程越准——这一步的质量直接决定整门课会不会讲错。",
+        "不需要你解释项目是干嘛的,它自己从 README 和入口代码里读出来。"
+      ],
+      "how": "AI 逐个打开仓库里的关键文件:README 讲用途,入口文件讲流程,再顺着调用关系把「谁在和谁说话」画出来。这一步只读不改,原代码库毫发无损。",
+      "fail": "代码库太大读不完时,课程会漏讲或讲浅某些部分——不报错,但内容变单薄。",
+      "code": [
+        {
+          "c": "**Figure out what the app does yourself** by reading the README,\nthe main entry points, and the UI code. Don't ask the user to\nexplain the product — they may not be familiar with it either.",
+          "n": "规则明确:自己读懂,不许反过来问用户「你这产品是干嘛的」。",
+          "risk": null
+        }
+      ],
+      "tradeoff": null,
+      "tourHint": "第 2 站 · 先读懂再开讲,课程准不准全看这一步。"
+    },
+    "curriculum": {
+      "lane": "be",
+      "tool": "课程弧线设计",
+      "grade": "routine",
+      "needs": ["analysis"],
+      "feeds": ["briefs"],
+      "name": "课程设计",
+      "role": "把读到的东西组织成 4–6 个模块的课程:从「你见过的界面」一路讲到「底下的代码」。",
+      "impact": [
+        "模块少而精,你不会拿到一门 20 章的天书。",
+        "每个模块都必须回答「这对你有什么用」——学完能直接用于指挥 AI、排查问题。"
+      ],
+      "how": "说明书里有一张 7 行的「模块菜单」(第 1 章讲这 App 干嘛、第 2 章认识各组件……),按代码库的复杂度从中挑 4–6 个。整体像变焦镜头:先广角看全貌,再一层层推近到代码。",
+      "fail": "结构选偏了(比如给简单小工具硬凑 7 章),内容会注水——是质量问题,不是崩溃。",
+      "code": [
+        {
+          "c": "Structure the course as **4-6 modules**. Most courses need 4-6.\nOnly go to 7-8 if the codebase genuinely has that many distinct\nconcepts worth teaching. Fewer, better modules beat more, thinner ones.",
+          "n": "模块数量被明确限死:宁可少而厚,不要多而薄。",
+          "risk": null
+        }
+      ],
+      "tradeoff": null,
+      "tourHint": "第 3 站 · 4–6 个模块的课程弧线在这里定型。"
+    },
+    "briefs": {
+      "lane": "be",
+      "tool": "模块简报 + 并行子代理",
+      "grade": "consequential",
+      "needs": ["curriculum"],
+      "feeds": ["modules"],
+      "name": "模块简报(复杂项目专用)",
+      "role": "复杂项目走并行路线时,先为每一章写一份「施工简报」,把要用的真实代码片段提前剪好塞进去。",
+      "impact": [
+        "多个 AI 分身同时各写一章,大项目的课程明显更快出炉。",
+        "代码片段只读一次就进简报,写作分身不再碰原代码库,省下大量 AI 额度(费用)。"
+      ],
+      "how": "简报 = 教学思路 + 预先剪好的代码片段 + 要做哪些互动元素。写章节的 AI 分身(同时开工的多个 AI 帮手)只看简报干活,完全不读原代码库。",
+      "fail": "简报里的代码片段剪错了,那一章就会讲错——而且写章的分身发现不了,因为它看不到原库。",
+      "code": [
+        {
+          "c": "The code snippets are the critical token-saving step.\nBy pre-extracting them into the brief, writing agents\nnever need to read the codebase at all.",
+          "n": "省钱的关键一步:片段提前剪进简报,写作分身不用再读整个代码库。",
+          "risk": null
+        }
+      ],
+      "tradeoff": {
+        "a": "简报 + 多个 AI 分身并行写作",
+        "b": "一个 AI 从头到尾顺序写完",
+        "cost": "多一道写简报的工序,各章口吻可能有细微差异,最后要额外做一次一致性检查。",
+        "when": "项目小(5 个模块以内)时并行不划算——这个技能自己也这么规定:简单项目直接走顺序路线,跳过本站。"
+      },
+      "tourHint": "第 4 站 · 大项目才启用:剪好料,发给多个分身同时开工。"
+    },
+    "assets": {
+      "lane": "db",
+      "tool": "references/ 预建文件",
+      "grade": "consequential",
+      "needs": [],
+      "feeds": ["modules", "build"],
+      "name": "素材库",
+      "role": "存放预先造好的零件:1195 行样式表、498 行交互引擎、页面骨架和组装脚本,每门课直接复制取用。",
+      "impact": [
+        "每门课的翻页、测验、动画行为完全一致,不会这门正常那门坏掉。",
+        "AI 不用每次重写这些代码,省额度,也躲开「AI 现写现坏」的风险。",
+        "代价是所有课程长一个样,想换视觉风格得动素材库本身。"
+      ],
+      "how": "素材库(项目里专门存现成零件的文件夹)里是写死的成品文件,规则只有一条:逐字复制进课程目录,永不让 AI 重新生成。",
+      "fail": "素材库文件被改坏,之后生成的每一门课都会坏在同一个地方——影响的是「全部未来课程」。",
+      "code": [
+        {
+          "c": "/**\n * CODEBASE-TO-COURSE — COMPLETE JS ENGINE\n * Copy this file verbatim into the course output directory.\n * Never regenerate it. It handles all interactivity generically.\n */",
+          "n": "交互引擎文件开头就写明身份:逐字复制,永不重造。",
+          "risk": "⚠ 改这个文件会影响之后生成的每一门课——它是所有课程共用的引擎,动之前先备份。"
+        }
+      ],
+      "tradeoff": {
+        "a": "预建资产,逐字复制",
+        "b": "每门课让 AI 现写样式和交互代码",
+        "cost": "所有课程视觉风格一模一样,个性化空间小(基本只能换主题色)。",
+        "when": "当你开始需要「每门课不同风格」,或素材库跟不上想要的新互动形式时,再引入 AI 参与生成——在那之前,稳定压倒个性。"
+      },
+      "tourHint": "第 5 站 · 现成零件仓库:复制即用,永不重造。"
+    },
+    "modules": {
+      "lane": "be",
+      "tool": "AI 写作 · content-philosophy 规则",
+      "grade": "routine",
+      "needs": ["briefs", "assets"],
+      "feeds": ["build"],
+      "name": "章节写作",
+      "role": "按内容规则把每一章写成网页片段:代码配人话对照、测验、组件群聊动画,一章一个文件。",
+      "impact": [
+        "你拿到的每一章都是「图多字少」——每屏至少一半是视觉元素,不是教科书文字墙。",
+        "课程里的代码和真实文件一字不差,你翻开原文件能对上——这是敢信它的底气。"
+      ],
+      "how": "写作要遵守内容哲学文件里的硬规则:每段最多 2–3 句话、每章至少一个代码对照和一个互动元素、比喻不许跨章重复。写出来的只是章节内容块,网页骨架另有其人。",
+      "fail": "某一章写坏了,只有那一章显示异常,其他章不受影响——后面的组装是简单拼接,不会连锁。",
+      "code": [
+        {
+          "c": "**Critical: Use original code exactly as-is.** Never modify,\nsimplify, or trim code snippets from the codebase. The learner\nshould be able to open the real file and see the exact same code\nthey learned from — that builds trust.",
+          "n": "内容铁律:课程里的代码必须和真实文件一字不差——为了让你敢信。",
+          "risk": null
+        }
+      ],
+      "tradeoff": null,
+      "tourHint": "第 6 站 · 各章内容在这里写成,图多字少是硬规定。"
+    },
+    "build": {
+      "lane": "be",
+      "tool": "build.sh(6 行脚本)",
+      "grade": "trivial",
+      "needs": ["modules", "assets"],
+      "feeds": ["course"],
+      "name": "组装",
+      "role": "把页面骨架、各章内容、页脚按顺序拼成一个 index.html 文件。",
+      "impact": [],
+      "how": "整个组装就是一条「把文件首尾相接」的命令(cat 就是把几个文件按顺序接起来),总共 6 行,没有任何智能。",
+      "fail": "",
+      "code": [
+        {
+          "c": "set -e\ncat _base.html modules/*.html _footer.html > index.html\necho \"Built index.html — open it in your browser.\"",
+          "n": "组装的全部真相:三部分首尾相接,输出一个网页文件。",
+          "risk": null
+        }
+      ],
+      "tradeoff": null,
+      "tourHint": "第 7 站 · 六行脚本把所有章节拼成一个网页。"
+    },
+    "course": {
+      "lane": "fe",
+      "tool": "index.html 单文件网页",
+      "grade": "routine",
+      "needs": ["build"],
+      "feeds": [],
+      "name": "成品课程",
+      "role": "学员真正看到的东西:双击就能打开的网页课程,滚动翻章、带测验、动画和术语悬浮解释。",
+      "impact": [
+        "不用装任何软件,整个文件夹可以直接发给别人,对方双击就能学。",
+        "唯一的外部依赖是网上字体:断网时课程照常能用,只是字体退回系统默认。"
+      ],
+      "how": "打开时浏览器加载拼好的网页,素材库里的交互引擎接管一切:滚到哪一章,顶部进度点亮到哪;点测验选项立即判对错。",
+      "fail": "网页字体加载失败时页面不会坏,只是没那么好看——这是全项目最无害的故障点。",
+      "code": [
+        {
+          "c": "<title>COURSE_TITLE</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n<script src=\"main.js\" defer></script>",
+          "n": "成品页面只挂三样东西:课程标题、本地样式表、本地交互引擎——后两样就躺在同一个文件夹里。",
+          "risk": null
+        }
+      ],
+      "tradeoff": null,
+      "tourHint": "第 8 站 · 终点:双击打开的完整课程,可以直接发给朋友。"
+    }
+  },
+  "diff": { "changed": [], "affected": [] }
+}
