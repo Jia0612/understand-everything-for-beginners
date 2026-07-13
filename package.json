@@ -1,0 +1,8 @@
+{
+  "name": "understand-everything",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/scan-project.test.mjs tests/validate-schema.test.mjs"
+  }
+}
