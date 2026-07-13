@@ -1,0 +1,223 @@
+{
+  "version": 1,
+  "language": "en",
+  "project": {
+    "name": "Ad Data Ingestion Pipeline",
+    "scenario": "The marketing team runs ads on 10+ media platforms and tunes budgets daily on spend, CTR, and CPA — the fresher the numbers, the better the calls.",
+    "pain": "Data was pulled by hand from each platform's console and stitched into spreadsheets: 10+ hours a week, and at best day-old numbers — always making today's decisions on yesterday's data.",
+    "now": "Every hour the pipeline pulls from all platforms, normalizes and dedupes the data, and stores it in a database. The team self-serves on a BI dashboard — manual exports no longer exist."
+  },
+  "chain": [
+    "scheduler",
+    "fetch",
+    "normalize",
+    "redis",
+    "db",
+    "dash"
+  ],
+  "nodes": {
+    "scheduler": {
+      "lane": "be",
+      "tool": "cronjob / AWS Lambda",
+      "grade": "routine",
+      "needs": [],
+      "feeds": [
+        "fetch"
+      ],
+      "name": "Scheduler",
+      "role": "Kicks off an ad-data pull every hour, on the hour — no human needed.",
+      "impact": [
+        "Data freshness went from daily to hourly; the numbers the team sees are at most an hour old.",
+        "No one runs scripts by hand anymore — that is where the 10+ saved hours a week come from."
+      ],
+      "how": "On the hour, AWS wakes a small piece of code that does exactly one thing: tell the Fetch Layer to start pulling. Then it sleeps until the next hour.",
+      "fail": "If one run fails, that hour's data has a gap; the next run fires as usual — nothing cascades.",
+      "code": [
+        {
+          "c": "# serverless.yml\nfunctions:\n  ingest:\n    handler: src/ingest.run",
+          "n": "Tells AWS: when there is work, run the function src/ingest.run.",
+          "risk": null
+        },
+        {
+          "c": "    events:\n      - schedule: cron(0 * * * ? *)",
+          "n": "This line is the timer itself. cron(0 * * * ? *) means: fire at minute 0 of every hour.",
+          "risk": null
+        },
+        {
+          "c": "// src/ingest.ts\nexport const run = async () => pipeline.start();",
+          "n": "The only thing it does when woken: start the pipeline.",
+          "risk": null
+        }
+      ],
+      "tradeoff": null,
+      "tourHint": "Stop 1 · Starts the whole pipeline every hour — hourly freshness is decided right here."
+    },
+    "fetch": {
+      "lane": "be",
+      "tool": "Node.js API plugins",
+      "grade": "consequential",
+      "needs": [
+        "scheduler"
+      ],
+      "feeds": [
+        "normalize"
+      ],
+      "name": "Fetch Layer",
+      "role": "Pulls raw ad data from 10+ media platforms.",
+      "impact": [
+        "10+ platforms, each with its own way of connecting — the most maintenance-heavy part of the project.",
+        "If one platform changes its API, only that plugin breaks; the rest keep running.",
+        "Adding a new platform means writing one new plugin from the template — nothing else changes."
+      ],
+      "how": "One small plugin per platform, all the same shape: a single getData(params) interface (an API is simply an agreed way for two programs to talk). When the Scheduler fires, every plugin pulls from its own platform.",
+      "fail": "If a platform's API is down or changed, only that platform's data is missing; the rest keep running, and the gap is backfilled next round.",
+      "code": [
+        {
+          "c": "// plugins/tiktok.ts\nexport const tiktok: MediaPlugin = {\n  name: \"tiktok\",",
+          "n": "One file like this per platform — it registers who it is.",
+          "risk": null
+        },
+        {
+          "c": "  async getData(params) {\n    const res = await fetch(API_URL, { headers: auth() });\n    return res.json();\n  },\n};",
+          "n": "Every plugin implements the same getData — the rest of the code never cares how differently TikTok and Google behave.",
+          "risk": "⚠ This line makes a real API call and spends your quota on that platform. The rate limiter at the Redis stop exists for this line."
+        }
+      ],
+      "tradeoff": {
+        "a": "hand-written adaptors (plugins)",
+        "b": "official SDKs per platform",
+        "cost": "Every platform's integration details are yours to maintain; when a platform changes, you patch.",
+        "when": "With only 2-3 major platforms and stable SDKs, SDKs are less work. With 10+ platforms and one unified interface, adaptors win — the case here."
+      },
+      "tourHint": "Stop 2 · Pulls raw data from 10+ platforms — the most maintenance-heavy part."
+    },
+    "normalize": {
+      "lane": "be",
+      "tool": "TypeScript data mapper",
+      "grade": "routine",
+      "needs": [
+        "fetch"
+      ],
+      "feeds": [
+        "redis"
+      ],
+      "name": "Normalize Layer",
+      "role": "Unifies each platform's differently-named fields into one standard JSON format.",
+      "impact": [
+        "\"Impressions\" on the dashboard always means one thing, whichever platform the data came from.",
+        "However odd a new platform's fields are, changes stay inside this layer — nothing downstream moves."
+      ],
+      "how": "Platforms name the same metric differently: some say views, some say impressions. This layer renames fields against one mapping table, then passes the data on.",
+      "fail": "A field missing from the mapping table is skipped and logged — unrecognized data is never passed downstream.",
+      "code": [
+        {
+          "c": "const FIELD_MAP = {\n  tiktok: { views: \"impressions\", cost: \"spend\" },\n  meta:   { impressions: \"impressions\", spend: \"spend\" },\n};",
+          "n": "The mapping table itself: platform names on the left, unified field names on the right.",
+          "risk": null
+        },
+        {
+          "c": "export const normalize = (src, row) =>\n  mapKeys(row, FIELD_MAP[src]);",
+          "n": "The whole operation is one line — swap field names per the table.",
+          "risk": null
+        }
+      ],
+      "tradeoff": null,
+      "tourHint": "Stop 3 · Field names get unified here; downstream never cares where data came from."
+    },
+    "redis": {
+      "lane": "be",
+      "tool": "Redis",
+      "grade": "consequential",
+      "needs": [
+        "normalize"
+      ],
+      "feeds": [
+        "db"
+      ],
+      "name": "Redis cache & rate limit",
+      "role": "Drops duplicate data and throttles calls to each platform's API so you don't get banned.",
+      "impact": [
+        "The same ad record never enters the database twice, so report numbers don't inflate.",
+        "No API key gets banned for calling too hard — one ban can mean days of missing data."
+      ],
+      "how": "Each record gets a fingerprint; Redis checks whether that fingerprint was seen before and drops it if so. Before every API call, the hour's call count is checked — over quota means waiting for the next hour.",
+      "fail": "If Redis goes down, the pipeline pauses rather than running unprotected — hammering APIs with no rate limit is worse than losing an hour.",
+      "code": [
+        {
+          "c": "const fp = hash(row.platform + row.ad_id + row.date);\nconst isNew = await redis.set(fp, 1, { NX: true, EX: 86400 });\nif (!isNew) return;",
+          "n": "Dedup in three lines. NX means \"write only if never seen\" — a failed write means a duplicate.",
+          "risk": null
+        },
+        {
+          "c": "const used = await redis.incr('quota:' + platform + ':' + hour);\nif (used > LIMIT) await sleepUntilNextHour();",
+          "n": "Rate limiting is just counting: which call of the hour is this; over the line, wait.",
+          "risk": null
+        }
+      ],
+      "tradeoff": {
+        "a": "Redis for dedup and rate limiting",
+        "b": "a database unique index alone",
+        "cost": "One more component to run — extra memory and operational overhead.",
+        "when": "At small volume (a few thousand rows a day) a unique index is enough and Redis can be cut. At 10+ platforms pulled hourly, the volume justifies it."
+      },
+      "tourHint": "Stop 4 · Dedup + rate limiting — this keeps your API keys alive."
+    },
+    "db": {
+      "lane": "db",
+      "tool": "PostgreSQL",
+      "grade": "consequential",
+      "needs": [
+        "redis"
+      ],
+      "feeds": [
+        "dash"
+      ],
+      "name": "Database",
+      "role": "Stores the cleaned ad data and serves the Dashboard's queries.",
+      "impact": [
+        "Every number on the Dashboard is queried from here — if it's down, reports go blank.",
+        "Data is stored by day: \"last 7 days\" is fast, \"all of last year\" is slow. That's the current design's boundary."
+      ],
+      "how": "Data cleared by Redis is written row by row into the ads_daily table; Looker Studio connects directly and runs aggregate queries (the kind that sums many rows into one number on a chart).",
+      "fail": "If the database is unreachable, the batch waits in a queue for retry — nothing is lost; the Dashboard shows stale data meanwhile.",
+      "code": [
+        {
+          "c": "CREATE TABLE ads_daily (\n  platform    text,\n  ad_id       text,\n  date        date,\n  impressions bigint,\n  spend       numeric,\n  PRIMARY KEY (platform, ad_id, date)\n);",
+          "n": "The entire store is one table. The three-part primary key guarantees one row per ad per day — the last line of defense for dedup.",
+          "risk": "⚠ Changing this table's structure (columns, primary key) is the hardest thing in the project to undo — everything is built on it. Back up first."
+        }
+      ],
+      "tradeoff": {
+        "a": "PostgreSQL",
+        "b": "BigQuery",
+        "cost": "Past hundreds of millions of rows, large aggregate queries struggle.",
+        "when": "When the team runs \"two years, all platforms\" analyses or rows pass 100M, move to BigQuery. Until then PostgreSQL is cheaper and simpler."
+      },
+      "tourHint": "Stop 5 · Where the data finally lives — every Dashboard number is queried from here."
+    },
+    "dash": {
+      "lane": "fe",
+      "tool": "Looker Studio / Tableau",
+      "grade": "routine",
+      "needs": [
+        "db"
+      ],
+      "feeds": [],
+      "name": "BI Dashboard",
+      "role": "Lets the marketing team see spend, CTR, and CPA directly — no SQL, no waiting for exports.",
+      "impact": [
+        "The team self-serves; you never manually export a weekly report again.",
+        "This part is bought, not built — zero lines of frontend code."
+      ],
+      "how": "Looker Studio connects straight to PostgreSQL. You configure charts by drag-and-drop; it generates the queries.",
+      "fail": "When a chart errors, the problem is almost always upstream — check whether today's data is in the Database before suspecting the chart config.",
+      "code": null,
+      "tradeoff": null,
+      "tourHint": "Stop 6 · The team self-serves here — the pipeline closes its loop."
+    }
+  },
+  "diff": {
+    "changed": [],
+    "affected": []
+  }
+}

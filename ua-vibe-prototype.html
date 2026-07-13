@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Understand My App · Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --root:#0a0a0a; --surface:#111111; --elevated:#1a1a1a; --panel:#141414;
+    --accent:#d4a574; --accent-bright:#e8c49a; --warn:#d4a030;
+    --text-1:#f5f0eb; --text-2:#a39787; --text-3:#6b5f53;
+    --border-subtle:rgba(212,165,116,.12); --border-medium:rgba(212,165,116,.25);
+    --glass:rgba(20,20,20,.8);
+    --lane-fe:#7ba4c9; --lane-be:#5a9e6f; --lane-db:#c9a06c;
+    --up:#4a7c9b;
+    --font-serif:'DM Serif Display',Georgia,serif;
+    --font-mono:'JetBrains Mono',monospace;
+    --font-sans:'Inter',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--font-sans);background:var(--root);color:var(--text-1);-webkit-font-smoothing:antialiased;overflow:hidden}
+  body::before{content:'';position:fixed;inset:0;opacity:.03;pointer-events:none;z-index:9999;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  header{display:flex;align-items:center;gap:14px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border-subtle);height:56px}
+  .brand{font-family:var(--font-serif);font-size:18px;letter-spacing:.02em;white-space:nowrap}
+  .brand em{color:var(--accent);font-style:normal}
+  .vdiv{width:1px;height:20px;background:var(--border-subtle)}
+  .proj{font-size:12px;color:var(--text-2);background:var(--elevated);border:1px solid var(--border-subtle);padding:4px 10px;border-radius:999px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+  #search{flex:1;max-width:240px;margin-left:auto;background:var(--elevated);border:1px solid var(--border-subtle);border-radius:8px;color:var(--text-1);font-size:13px;padding:7px 12px}
+  #search::placeholder{color:var(--text-3)}
+  .langpill{display:flex;background:var(--elevated);border:1px solid var(--border-subtle);border-radius:8px;padding:2px}
+  .langpill button{font-size:12px;padding:4px 9px;border-radius:6px;color:var(--text-2)}
+  .langpill button.on{background:rgba(212,165,116,.15);color:var(--accent)}
+  .btn-tour{font-size:13px;font-weight:500;color:var(--accent);background:rgba(212,165,116,.1);border:1px solid var(--border-medium);border-radius:8px;padding:7px 14px;white-space:nowrap;transition:background .15s}
+  .btn-tour:hover{background:rgba(212,165,116,.2)}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(212,165,116,.45)}50%{box-shadow:0 0 0 9px rgba(212,165,116,0)}}
+  body.intro .btn-tour{animation:pulse 1.8s infinite;background:var(--accent);color:#0a0a0a}
+
+  .main{display:flex;height:calc(100% - 56px)}
+  .canvas-wrap{flex:1;overflow:auto;position:relative}
+  .canvas{position:relative;height:100%;min-height:580px}
+
+  .lane{position:absolute;left:0;right:0;border-bottom:1px dashed var(--border-subtle)}
+  .lane-label{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;writing-mode:vertical-rl;opacity:.85}
+  #lane-fe{top:0;height:160px}     #lane-fe .lane-label{color:var(--lane-fe)}
+  #lane-be{top:160px;height:200px} #lane-be .lane-label{color:var(--lane-be)}
+  #lane-db{top:360px;height:200px;border-bottom:none} #lane-db .lane-label{color:var(--lane-db)}
+
+  svg.edges{position:absolute;top:0;left:0;height:100%;pointer-events:none}
+  .edge{stroke:rgba(212,165,116,.3);stroke-width:1.5;fill:none;transition:stroke .2s,opacity .3s}
+  .edge.up{stroke:var(--up);stroke-width:2}
+  .edge.down{stroke:var(--accent);stroke-width:2}
+  body.intro .edge{opacity:.12}
+
+  .node{position:absolute;width:180px;background:var(--panel);border:1px solid var(--border-subtle);border-radius:10px;padding:10px 12px;transition:border-color .15s,opacity .3s,box-shadow .15s;text-align:left}
+  .node:hover{border-color:var(--border-medium)}
+  .node.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 24px rgba(212,165,116,.15)}
+  .node.up-hl{border-color:var(--up);box-shadow:0 0 0 1px var(--up)}
+  .node.down-hl{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .node.dim{opacity:.22}
+  body.intro .node{opacity:.15}
+  .node-head{display:flex;align-items:center;gap:7px}
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .node-name{font-size:13.5px;font-weight:600;flex:1}
+  .tag-tradeoff{font-size:9px;font-weight:600;letter-spacing:.08em;color:var(--accent);border:1px solid var(--border-medium);border-radius:4px;padding:1px 5px}
+  .node-tool{margin-top:6px;font-family:var(--font-mono);font-size:10.5px;color:var(--text-2);background:var(--elevated);border-radius:5px;padding:3px 7px;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .legend{position:absolute;left:20px;bottom:16px;display:none;gap:14px;font-size:11px;color:var(--text-2);background:var(--glass);border:1px solid var(--border-subtle);border-radius:8px;padding:7px 12px;backdrop-filter:blur(8px);z-index:5}
+  .legend.on{display:flex}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+
+  aside{width:350px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border-subtle);display:flex;flex-direction:column;overflow:hidden}
+  .tourbar{display:none;align-items:center;gap:8px;padding:9px 14px;background:rgba(212,165,116,.07);border-bottom:1px solid var(--border-medium);font-size:12px}
+  .tourbar.on{display:flex}
+  .tourbar .step{font-family:var(--font-mono);color:var(--accent);white-space:nowrap}
+  .tourbar .hint{flex:1;color:var(--text-2);line-height:1.4}
+  .tourbar button{color:var(--accent);font-size:12px;padding:3px 8px;border:1px solid var(--border-medium);border-radius:6px;white-space:nowrap}
+  .tourbar button:disabled{opacity:.35;cursor:default}
+  #tourNext{background:var(--accent);color:#0a0a0a;font-weight:600;animation:pulse 1.8s infinite}
+  #tourNext:disabled{animation:none;background:var(--elevated);color:var(--text-3)}
+  .panel-scroll{flex:1;overflow-y:auto;padding:20px 18px 16px}
+  .panel-scroll::-webkit-scrollbar{width:8px}
+  .panel-scroll::-webkit-scrollbar-thumb{background:rgba(212,165,116,.2);border-radius:4px}
+
+  h2.pname{font-family:var(--font-serif);font-size:21px;font-weight:400;letter-spacing:.01em}
+  .badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .badge{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--border-subtle);background:var(--elevated);color:var(--text-2)}
+  .badge.tool{font-family:var(--font-mono);color:var(--accent-bright);border-color:var(--border-medium)}
+  .role{margin-top:12px;font-size:13px;line-height:1.65;color:var(--text-1);border-left:2px solid var(--accent);padding-left:11px}
+
+  .sec{margin-top:22px}
+  .sec-title{font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin-bottom:9px}
+  .impact li{list-style:none;position:relative;padding-left:16px;font-size:13px;line-height:1.65;color:var(--text-1);margin-bottom:7px}
+  .impact li::before{content:'—';position:absolute;left:0;color:var(--accent)}
+  .how{font-size:13px;line-height:1.7;color:var(--text-1)}
+  .fail{margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--text-2)}
+  .fail b{color:var(--warn);font-weight:600}
+
+  .dep-row{display:flex;align-items:baseline;gap:8px;font-size:12.5px;margin-bottom:8px}
+  .dep-key{color:var(--text-3);white-space:nowrap;min-width:64px;flex-shrink:0}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--elevated);border:1px solid var(--border-subtle);color:var(--text-1);transition:border-color .15s}
+  .chip:hover{border-color:var(--accent)}
+  .chip.none{color:var(--text-3);border-style:dashed;cursor:default}
+
+  .code-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--text-2);background:var(--elevated);border:1px solid var(--border-subtle);border-radius:8px;padding:9px 12px;transition:border-color .15s}
+  .code-toggle:hover{border-color:var(--border-medium)}
+  .code-toggle .arrow{transition:transform .2s;color:var(--accent)}
+  .code-body{display:none;margin-top:10px}
+  .code-open .code-body{display:block}
+  .code-open .arrow{transform:rotate(90deg)}
+  .cblock{margin-bottom:14px}
+  .cblock pre{font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:#cfc6ba;background:#0d0d0d;border:1px solid var(--border-subtle);border-radius:8px 8px 0 0;padding:10px 12px;overflow-x:auto}
+  .cblock .note{font-size:12px;line-height:1.6;color:var(--text-2);background:rgba(212,165,116,.05);border:1px solid var(--border-subtle);border-top:none;padding:8px 12px}
+  .cblock .note:last-child{border-radius:0 0 8px 8px}
+  .cblock .risk{font-size:12px;line-height:1.6;color:var(--warn);background:rgba(212,160,48,.06);border:1px solid rgba(212,160,48,.3);border-top:none;border-radius:0 0 8px 8px;padding:8px 12px}
+  .no-code{font-size:12.5px;color:var(--text-3);font-style:italic}
+
+  .tradeoff{background:rgba(212,165,116,.05);border:1px solid var(--border-medium);border-radius:10px;padding:13px 14px}
+  .tradeoff p{font-size:12.5px;line-height:1.6;margin-bottom:7px}
+  .tradeoff p:last-child{margin-bottom:0}
+  .tradeoff b{color:var(--accent-bright);font-weight:600}
+
+  .panel-foot{padding:12px 18px;border-top:1px solid var(--border-subtle)}
+  .btn-hl{width:100%;font-size:13px;font-weight:500;color:var(--accent);background:rgba(212,165,116,.1);border:1px solid var(--border-medium);border-radius:8px;padding:10px;transition:background .15s}
+  .btn-hl:hover{background:rgba(212,165,116,.2)}
+  .btn-hl.active{background:var(--accent);color:#0a0a0a}
+
+  .ov-stats{display:flex;gap:8px;margin-top:22px}
+  .stat{flex:1;background:var(--elevated);border:1px solid var(--border-subtle);border-radius:9px;padding:10px;text-align:center}
+  .stat .n{font-family:var(--font-serif);font-size:20px;color:var(--accent)}
+  .stat .l{font-size:10.5px;color:var(--text-3);margin-top:2px}
+  .ov-hint{margin-top:18px;font-size:12.5px;color:var(--text-3);line-height:1.6}
+
+  /* onboarding modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+  .modal{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border-medium);border-radius:14px;padding:26px 24px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .modal h1{font-family:var(--font-serif);font-size:24px;font-weight:400}
+  .modal h1 em{color:var(--accent);font-style:normal}
+  .modal .sub{margin-top:8px;font-size:13px;color:var(--text-2);line-height:1.6}
+  .m-label{margin-top:20px;font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+  .m-langs{display:flex;gap:8px;margin-top:9px}
+  .m-langs button{flex:1;font-size:13px;padding:9px;border:1px solid var(--border-subtle);border-radius:8px;background:var(--elevated);color:var(--text-2)}
+  .m-langs button.on{border-color:var(--accent);color:var(--accent);background:rgba(212,165,116,.08)}
+  #repoUrl{width:100%;margin-top:9px;background:var(--elevated);border:1px solid var(--border-subtle);border-radius:8px;color:var(--text-1);font-size:13px;padding:9px 12px;font-family:var(--font-mono)}
+  #repoUrl::placeholder{color:var(--text-3);font-family:var(--font-sans)}
+  .m-note{margin-top:7px;font-size:11.5px;color:var(--text-3);line-height:1.5}
+  .m-actions{display:flex;gap:8px;margin-top:18px}
+  .m-actions button{flex:1;font-size:13px;font-weight:500;padding:10px;border-radius:8px}
+  #btnAnalyze{background:var(--accent);color:#0a0a0a}
+  #btnAnalyze:disabled{background:var(--elevated);color:var(--text-3);cursor:default}
+  #btnDemo{border:1px solid var(--border-medium);color:var(--accent)}
+  .m-status{margin-top:12px;font-size:12px;color:var(--text-2);min-height:16px;line-height:1.5}
+  .m-status.err{color:#e05252}
+
+  @media (max-width:980px){
+    .main{flex-direction:column}
+    aside{width:100%;height:46%;border-left:none;border-top:1px solid var(--border-subtle)}
+    #search{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body class="intro">
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h1 id="mTitle"></h1>
+    <p class="sub" id="mSub"></p>
+    <div class="m-label" id="mLangLabel"></div>
+    <div class="m-langs">
+      <button id="mEn" class="on">English</button>
+      <button id="mZh">中文</button>
+    </div>
+    <div class="m-label" id="mRepoLabel"></div>
+    <input id="repoUrl" type="text" placeholder="https://github.com/you/your-repo" />
+    <p class="m-note" id="mNote"></p>
+    <div class="m-actions">
+      <button id="btnAnalyze"></button>
+      <button id="btnDemo"></button>
+    </div>
+    <p class="m-status" id="mStatus"></p>
+  </div>
+</div>
+
+<header>
+  <div class="brand" id="hBrand"></div>
+  <div class="vdiv"></div>
+  <div class="proj" id="hProj"></div>
+  <input id="search" type="text" />
+  <div class="langpill">
+    <button id="pillEn" class="on">EN</button>
+    <button id="pillZh">中文</button>
+  </div>
+  <button class="btn-tour" id="btnTour"></button>
+</header>
+
+<div class="main">
+  <div class="canvas-wrap">
+    <div class="canvas" id="canvas">
+      <div class="lane" id="lane-fe"><span class="lane-label" id="llfe"></span></div>
+      <div class="lane" id="lane-be"><span class="lane-label" id="llbe"></span></div>
+      <div class="lane" id="lane-db"><span class="lane-label">Database</span></div>
+      <svg class="edges" id="edges">
+        <defs>
+          <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L8,4 L0,8 z" fill="rgba(212,165,116,.5)"/>
+          </marker>
+        </defs>
+        <g id="edgeG"></g>
+      </svg>
+      <div class="legend" id="legend"><span id="legUp"></span><span id="legDn"></span></div>
+    </div>
+  </div>
+
+  <aside>
+    <div class="tourbar" id="tourbar">
+      <span class="step" id="tourStep"></span>
+      <span class="hint" id="tourHint"></span>
+      <button id="tourPrev"></button>
+      <button id="tourNext"></button>
+      <button id="tourExit"></button>
+    </div>
+    <div class="panel-scroll" id="panel"></div>
+    <div class="panel-foot" id="panelFoot" style="display:none">
+      <button class="btn-hl" id="btnHl"></button>
+    </div>
+  </aside>
+</div>
+
+<script>
+/* ---------- i18n UI strings ---------- */
+var STR = {
+  en:{brand:'Understand My <em>App</em>', search:'Search a part or tool, e.g. Redis', tour:'Start the tour',
+    prev:'Back', next:'Next', exit:'Exit', intro:'Intro', stopOf:function(n,m){return 'Stop '+n+' of '+m}, lane_fe:'Frontend', lane_be:'Backend',
+    legUp:'<i style="background:var(--up)"></i>What it needs (upstream)', legDn:'<i style="background:var(--accent)"></i>What waits on it (downstream)',
+    scen:'Business context', pain:'The pain before', now:'What it does now',
+    parts:'parts', layers:'layers', trades:'key tradeoffs',
+    ovHint:'Click any part on the canvas, or take the tour in data-flow order. Parts tagged "tradeoff" are where a real choice was made.',
+    impact:'How this design affects you', how:'How it works', broke:'When it breaks:',
+    deps:'Dependencies', needs:'It needs', feeds:'Waiting on it', isStart:'nothing · it is the start', isEnd:'nothing · it is the end',
+    code:function(n){return 'Core code ('+n+' lines)'}, noCode:'No code here — this part is configured, not written.',
+    trade:'The tradeoff', chose:'Chose', over:'over', cost:'Cost:', when:'When to switch:',
+    hl:'Highlight it in the flow', unhl:'Clear highlight', tag:'tradeoff',
+    sumHint:'Start with why this project exists — then walk the pipeline.',
+    mTitle:'Understand My <em>App</em>', mSub:'See what your vibe-coded app is made of — every part explained in plain language: what it does, why it was chosen, and what it costs you.',
+    mLang:'Language', mRepo:'Your GitHub repo (optional)',
+    mNote:'Analysis reads public repos and asks Claude to explain them. It runs when this page is opened inside Claude; opened locally, use the demo.',
+    analyze:'Analyze this repo', demo:'Explore the demo project',
+    sFetchList:'Reading the repo file list…', sFetchFiles:'Reading key files…', sAsk:'Asking Claude to explain the project…',
+    eUrl:'That does not look like a GitHub repo URL.', eRepo:'Could not read the repo (private, missing, or rate-limited).', eGen:'Analysis failed — the response could not be parsed. Try again, or explore the demo.'},
+  zh:{brand:'看懂我的 <em>App</em>', search:'搜零件或工具，比如 Redis', tour:'开始导览',
+    prev:'上一步', next:'下一步', exit:'退出', intro:'开始', stopOf:function(n,m){return '管道第 '+n+'/'+m+' 站'}, lane_fe:'前端', lane_be:'后端',
+    legUp:'<i style="background:var(--up)"></i>它需要的（上游）', legDn:'<i style="background:var(--accent)"></i>等它输出的（下游）',
+    scen:'业务场景', pain:'当时的痛点', now:'现在它做什么',
+    parts:'个零件', layers:'层结构', trades:'个关键取舍',
+    ovHint:'点击画布上的任意零件，或按数据流顺序走一遍导览。带「取舍」标签的零件，是当初真正做过选择的地方。',
+    impact:'这样设计影响你什么', how:'它怎么工作', broke:'出问题时：',
+    deps:'依赖关系', needs:'它需要', feeds:'谁在等它', isStart:'没有 · 它是起点', isEnd:'没有 · 它是终点',
+    code:function(n){return '核心代码（'+n+' 行）'}, noCode:'这一块没有代码——它是配置出来的，不是写出来的。',
+    trade:'当初的取舍', chose:'选了', over:'没选', cost:'代价：', when:'什么时候该换：',
+    hl:'在流程里高亮它的上下游', unhl:'取消高亮', tag:'取舍',
+    sumHint:'先看这个项目为什么存在——再沿管道走一遍。',
+    mTitle:'看懂我的 <em>App</em>', mSub:'看清你 vibe code 出来的 App 是由什么组成的——每个零件用人话解释：它干什么、为什么选它、代价是什么。',
+    mLang:'语言', mRepo:'你的 GitHub 仓库（可选）',
+    mNote:'分析会读取公开仓库并让 Claude 解释它。在 Claude 里打开本页时可用；本地打开请先看示例项目。',
+    analyze:'分析这个仓库', demo:'先看示例项目',
+    sFetchList:'正在读取仓库文件列表…', sFetchFiles:'正在读取关键文件…', sAsk:'正在让 Claude 解释这个项目…',
+    eUrl:'这看起来不是一个 GitHub 仓库链接。', eRepo:'读不到这个仓库（私有、不存在或被限流）。', eGen:'分析失败——返回内容无法解析。可以重试，或先看示例项目。'}
+};
+
+/* ---------- demo data (bilingual). B() wraps a bilingual value ---------- */
+function B(en,zh){return {en:en,zh:zh}}
+var DEMO = {
+  chain:["scheduler","fetch","normalize","redis","db","dash"],
+  project:{
+    name:B("Ad Data Ingestion Pipeline","广告数据自动采集管道"),
+    scenario:B("The marketing team runs ads on 10+ media platforms and tunes budgets daily on spend, CTR, and CPA — the fresher the numbers, the better the calls.","市场团队在 10+ 个媒体平台投广告，每天要盯着 spend、CTR、CPA 调预算——数字越新鲜，预算调得越准。"),
+    pain:B("Data was pulled by hand from each platform's console and stitched into spreadsheets: 10+ hours a week, and at best day-old numbers — always making today's decisions on yesterday's data.","数据靠人工从各平台后台导出、再拼进表格：每周吃掉 10+ 小时，而且最快只有「天级」新鲜度——市场团队永远在用昨天的数字做今天的决定。"),
+    now:B("Every hour the pipeline pulls from all platforms, normalizes and dedupes the data, and stores it in a database. The team self-serves on a BI dashboard — manual exports no longer exist.","每小时自动从各平台抓数据，统一格式、去重后存进数据库，市场团队在 BI 大屏上自助看数。人工导表这件事从此不存在。")
+  },
+  nodes:{
+    scheduler:{lane:"be",tool:"cronjob / AWS Lambda",grade:"routine",needs:[],feeds:["fetch"],
+      name:B("Scheduler","Scheduler"),
+      role:B("Kicks off an ad-data pull every hour, on the hour — no human needed.","每小时整点自动启动一次广告数据抓取——不需要任何人手动跑。"),
+      impact:[B("Data freshness went from daily to hourly; the numbers the team sees are at most an hour old.","数据从「每天更新」变成「每小时更新」，市场团队看到的数字最多滞后一小时。"),
+              B("No one runs scripts by hand anymore — that is where the 10+ saved hours a week come from.","不用再有人手动跑脚本，每周省下的 10+ 小时就在这里。")],
+      how:B("On the hour, AWS wakes a small piece of code that does exactly one thing: tell the Fetch Layer to start pulling. Then it sleeps until the next hour.","到整点，AWS 自动唤醒一段代码，它只做一件事：通知 Fetch Layer 开始抓数据。做完就停，等下一个整点。"),
+      fail:B("If one run fails, that hour's data has a gap; the next run fires as usual — nothing cascades.","某一次定时任务失败，这一小时的数据会缺一格；下个整点照常再跑，不会连锁挂掉。"),
+      code:[{c:"# serverless.yml\nfunctions:\n  ingest:\n    handler: src/ingest.run", n:B("Tells AWS: when there is work, run the function src/ingest.run.","告诉 AWS：「有活儿的时候，去跑 src/ingest.run 这个函数。」")},
+            {c:"    events:\n      - schedule: cron(0 * * * ? *)", n:B("This line is the timer itself. cron(0 * * * ? *) means: fire at minute 0 of every hour.","这一行就是定时器本体。cron(0 * * * ? *) 的意思是：每小时的第 0 分钟触发一次。")},
+            {c:"// src/ingest.ts\nexport const run = async () => pipeline.start();", n:B("The only thing it does when woken: start the pipeline.","被唤醒之后做的唯一一件事：启动整条管道。")}],
+      tradeoff:null,
+      tourHint:B("Stop 1 · Starts the whole pipeline every hour — hourly freshness is decided right here.","第 1 站 · 每小时定时启动整条管道，「每小时更新」就是它定的。")},
+    fetch:{lane:"be",tool:"Node.js API plugins",grade:"consequential",needs:["scheduler"],feeds:["normalize"],
+      name:B("Fetch Layer","Fetch Layer"),
+      role:B("Pulls raw ad data from 10+ media platforms.","去 10+ 个媒体平台抓原始广告数据。"),
+      impact:[B("10+ platforms, each with its own way of connecting — the most maintenance-heavy part of the project.","要对接 10+ 个平台，每家的对接方式都不同——这里是全项目最费维护的地方。"),
+              B("If one platform changes its API, only that plugin breaks; the rest keep running.","某个平台改了 API，只坏那一个插件，其余照常跑，故障被隔离住了。"),
+              B("Adding a new platform means writing one new plugin from the template — nothing else changes.","以后想加新平台，照模板再写一个插件就行，别处一行不用改。")],
+      how:B("One small plugin per platform, all the same shape: a single getData(params) interface (an API is simply an agreed way for two programs to talk). When the Scheduler fires, every plugin pulls from its own platform.","每个媒体平台一个小插件，结构完全一样：对外只有一个 getData(params) 接口（API 就是两个程序之间约定好的对话方式）。Scheduler 一触发，所有插件各自去自己的平台拉原始数据。"),
+      fail:B("If a platform's API is down or changed, only that platform's data is missing; the rest keep running, and the gap is backfilled next round.","某个平台的 API 挂了或改版，只有那一家的数据缺失，其余插件照常跑；缺的部分下一轮补抓。"),
+      code:[{c:"// plugins/tiktok.ts\nexport const tiktok: MediaPlugin = {\n  name: \"tiktok\",", n:B("One file like this per platform — it registers who it is.","每个平台一个这样的文件，先登记自己是谁。")},
+            {c:"  async getData(params) {\n    const res = await fetch(API_URL, { headers: auth() });\n    return res.json();\n  },\n};", n:B("Every plugin implements the same getData — the rest of the code never cares how differently TikTok and Google behave.","所有插件都实现同一个 getData——外面的代码不用关心 TikTok 和 Google 的取法有多不一样。"),
+             risk:B("⚠ This line makes a real API call and spends your quota on that platform. The rate limiter at the Redis stop exists for this line.","⚠ 这一行会真实调用平台 API，消耗你在该平台的调用额度。Redis 那一站的限速就是为它准备的。")}],
+      tradeoff:{a:B("hand-written adaptors (plugins)","自己写 adaptor（插件）"),b:B("official SDKs per platform","用各平台官方 SDK"),
+        cost:B("Every platform's integration details are yours to maintain; when a platform changes, you patch.","每个平台的对接细节都得自己维护，平台改版就得跟着修。"),
+        when:B("With only 2-3 major platforms and stable SDKs, SDKs are less work. With 10+ platforms and one unified interface, adaptors win — the case here.","如果只接 2-3 个大平台、官方 SDK 又稳定，直接用 SDK 更省事。平台一多、接口要统一，adaptor 才划算——现在是 10+ 个平台，所以选它。")},
+      tourHint:B("Stop 2 · Pulls raw data from 10+ platforms — the most maintenance-heavy part.","第 2 站 · 从 10+ 个平台抓原始数据，全项目最费维护的地方。")},
+    normalize:{lane:"be",tool:"TypeScript data mapper",grade:"routine",needs:["fetch"],feeds:["redis"],
+      name:B("Normalize Layer","Normalize Layer"),
+      role:B("Unifies each platform's differently-named fields into one standard JSON format.","把各平台叫法不一的字段统一成一套标准 JSON 格式。"),
+      impact:[B("\"Impressions\" on the dashboard always means one thing, whichever platform the data came from.","Dashboard 上的「impressions」永远只有一个意思，不管数据来自哪个平台。"),
+              B("However odd a new platform's fields are, changes stay inside this layer — nothing downstream moves.","新平台的字段再古怪，改动也只发生在这一层，下游全都不用动。")],
+      how:B("Platforms name the same metric differently: some say views, some say impressions. This layer renames fields against one mapping table, then passes the data on.","每个平台对同一个指标叫法不同：有的叫 views，有的叫 impressions。这一层按一张对照表把字段名统一掉，再往下传。"),
+      fail:B("A field missing from the mapping table is skipped and logged — unrecognized data is never passed downstream.","遇到对照表里没有的新字段，这条数据会被跳过并记进日志，不会把认不出的数据往下传。"),
+      code:[{c:"const FIELD_MAP = {\n  tiktok: { views: \"impressions\", cost: \"spend\" },\n  meta:   { impressions: \"impressions\", spend: \"spend\" },\n};", n:B("The mapping table itself: platform names on the left, unified field names on the right.","对照表本体：左边是各平台自己的叫法，右边是统一后的字段名。")},
+            {c:"export const normalize = (src, row) =>\n  mapKeys(row, FIELD_MAP[src]);", n:B("The whole operation is one line — swap field names per the table.","统一动作只有一行——按对照表把字段名换掉。")}],
+      tradeoff:null,
+      tourHint:B("Stop 3 · Field names get unified here; downstream never cares where data came from.","第 3 站 · 字段名在这里统一，下游不用关心数据来自哪个平台。")},
+    redis:{lane:"be",tool:"Redis",grade:"consequential",needs:["normalize"],feeds:["db"],
+      name:B("Redis cache & rate limit","Redis 缓存 & 限速"),
+      role:B("Drops duplicate data and throttles calls to each platform's API so you don't get banned.","去掉重复数据，并控制调用各平台 API 的频率，防止被封。"),
+      impact:[B("The same ad record never enters the database twice, so report numbers don't inflate.","同一条广告数据不会重复入库，报表数字不会虚高。"),
+              B("No API key gets banned for calling too hard — one ban can mean days of missing data.","不会因为调用太猛被平台封 API key——封一次，数据可能断更好几天。")],
+      how:B("Each record gets a fingerprint; Redis checks whether that fingerprint was seen before and drops it if so. Before every API call, the hour's call count is checked — over quota means waiting for the next hour.","每条数据先算一个指纹，Redis 查这个指纹出现过没有，出现过就丢弃。同时，每次调平台 API 前先查本小时的调用次数，超额就等到下个小时。"),
+      fail:B("If Redis goes down, the pipeline pauses rather than running unprotected — hammering APIs with no rate limit is worse than losing an hour.","Redis 挂了，管道会暂停而不是继续裸跑——没有限速保护地狂调 API，比停一小时更危险。"),
+      code:[{c:"const fp = hash(row.platform + row.ad_id + row.date);\nconst isNew = await redis.set(fp, 1, { NX: true, EX: 86400 });\nif (!isNew) return;", n:B("Dedup in three lines. NX means \"write only if never seen\" — a failed write means a duplicate.","三行完成去重。NX 的意思是「只有没见过才写入」——写入失败，就说明是重复数据。")},
+            {c:"const used = await redis.incr('quota:' + platform + ':' + hour);\nif (used > LIMIT) await sleepUntilNextHour();", n:B("Rate limiting is just counting: which call of the hour is this; over the line, wait.","限速就是数数：本小时第几次调用，过线就等。")}],
+      tradeoff:{a:B("Redis for dedup and rate limiting","用 Redis 做去重和限速"),b:B("a database unique index alone","只靠数据库唯一索引兜底"),
+        cost:B("One more component to run — extra memory and operational overhead.","多养一个组件，多一份内存开销和运维心智。"),
+        when:B("At small volume (a few thousand rows a day) a unique index is enough and Redis can be cut. At 10+ platforms pulled hourly, the volume justifies it.","数据量小（每天几千条）时，数据库唯一索引就够了，Redis 可以整个砍掉。现在是 10+ 平台每小时抓取，量级撑得起它。")},
+      tourHint:B("Stop 4 · Dedup + rate limiting — this keeps your API keys alive.","第 4 站 · 去重 + 限速，保住你的 API key。")},
+    db:{lane:"db",tool:"PostgreSQL",grade:"consequential",needs:["redis"],feeds:["dash"],
+      name:B("Database","Database"),
+      role:B("Stores the cleaned ad data and serves the Dashboard's queries.","存清洗完的广告数据，供 Dashboard 查询。"),
+      impact:[B("Every number on the Dashboard is queried from here — if it's down, reports go blank.","Dashboard 的每一个数字都从这里查——它挂了，报表就白屏。"),
+              B("Data is stored by day: \"last 7 days\" is fast, \"all of last year\" is slow. That's the current design's boundary.","数据按天存放，查「最近 7 天」很快；查「去年全年」会慢，这是当前方案的边界。")],
+      how:B("Data cleared by Redis is written row by row into the ads_daily table; Looker Studio connects directly and runs aggregate queries (the kind that sums many rows into one number on a chart).","Redis 放行的干净数据一行行写进 ads_daily 表，Looker Studio 直连这张表做聚合查询（就是把很多行加总成图表上一个数字的那种查询）。"),
+      fail:B("If the database is unreachable, the batch waits in a queue for retry — nothing is lost; the Dashboard shows stale data meanwhile.","数据库连不上时，这一批数据先留在队列里等重试，不会丢；期间 Dashboard 显示的是旧数据。"),
+      code:[{c:"CREATE TABLE ads_daily (\n  platform    text,\n  ad_id       text,\n  date        date,\n  impressions bigint,\n  spend       numeric,\n  PRIMARY KEY (platform, ad_id, date)\n);", n:B("The entire store is one table. The three-part primary key guarantees one row per ad per day — the last line of defense for dedup.","整个存储就这一张表。主键三件套保证「同一天、同一条广告」只存一行——这是去重的最后一道保险。"),
+             risk:B("⚠ Changing this table's structure (columns, primary key) is the hardest thing in the project to undo — everything is built on it. Back up first.","⚠ 改这张表的结构（加列、改主键）是全项目最难回头的操作——上下游都建在它上面，动之前先备份。")}],
+      tradeoff:{a:B("PostgreSQL","PostgreSQL"),b:B("BigQuery","BigQuery"),
+        cost:B("Past hundreds of millions of rows, large aggregate queries struggle.","数据涨到亿级行之后，大范围聚合查询会吃力。"),
+        when:B("When the team runs \"two years, all platforms\" analyses or rows pass 100M, move to BigQuery. Until then PostgreSQL is cheaper and simpler.","当市场团队开始跑「跨两年、全平台」这类大分析，或行数过亿时，迁去 BigQuery。在那之前，PostgreSQL 更便宜也更简单。")},
+      tourHint:B("Stop 5 · Where the data finally lives — every Dashboard number is queried from here.","第 5 站 · 数据的最终存放处，Dashboard 的每个数字都从这里查。")},
+    dash:{lane:"fe",tool:"Looker Studio / Tableau",grade:"routine",needs:["db"],feeds:[],
+      name:B("BI Dashboard","BI Dashboard"),
+      role:B("Lets the marketing team see spend, CTR, and CPA directly — no SQL, no waiting for exports.","让市场团队直接看 spend、CTR、CPA——不用会 SQL，也不用等人导表。"),
+      impact:[B("The team self-serves; you never manually export a weekly report again.","市场团队自助看数，你从此不用再手动导表发周报。"),
+              B("This part is bought, not built — zero lines of frontend code.","这一块是「买现成」而不是「自己造」——一行前端代码都没写。")],
+      how:B("Looker Studio connects straight to PostgreSQL. You configure charts by drag-and-drop; it generates the queries.","Looker Studio 直连 PostgreSQL。你在图形界面里拖拽配置图表，它自动生成查询语句去取数。"),
+      fail:B("When a chart errors, the problem is almost always upstream — check whether today's data is in the Database before suspecting the chart config.","图表报错时，问题几乎都在上游——先看 Database 里有没有当天的数据，再怀疑图表配置。"),
+      code:null, tradeoff:null,
+      tourHint:B("Stop 6 · The team self-serves here — the pipeline closes its loop.","第 6 站 · 市场团队在这里自助看数，流水线到此闭环。")}
+  }
+};
+
+/* ---------- state ---------- */
+var lang = "en";
+var DATA = DEMO;               // current dataset (demo or generated)
+var CHAIN = DATA.chain;
+var selected = null, hlActive = false, tourOn = false, tourIdx = 0;
+var NODE_W = 180, LANE_Y = {fe:60, be:255, db:440};
+
+function L(v){ if(v==null) return ""; return (typeof v==="object" && ("en" in v||"zh" in v)) ? (v[lang]!=null?v[lang]:(v.en||v.zh)) : v; }
+function S(){ return STR[lang]; }
+function el(id){ return document.getElementById(id); }
+
+/* ---------- canvas ---------- */
+function nodePos(id){ var i = CHAIN.indexOf(id); return {x: 50 + i*210, y: LANE_Y[DATA.nodes[id].lane] || LANE_Y.be}; }
+function edgePath(a,b){
+  var sx=a.x+NODE_W, sy=a.y+33, tx=b.x, ty=b.y+33;
+  if (sy===ty) return "M"+sx+","+sy+" L"+tx+","+ty;
+  var mx=(sx+tx)/2;
+  return "M"+sx+","+sy+" C"+mx+","+sy+" "+mx+","+ty+" "+tx+","+ty;
+}
+function buildCanvas(){
+  document.querySelectorAll(".node").forEach(function(n){n.remove()});
+  var g = el("edgeG"); g.innerHTML = "";
+  var w = 50 + CHAIN.length*210 + 40;
+  el("canvas").style.minWidth = w+"px";
+  el("edges").style.width = w+"px";
+  CHAIN.forEach(function(id){
+    var n = DATA.nodes[id], p = nodePos(id);
+    var e = document.createElement("button");
+    e.className = "node"; e.id = "n-"+id;
+    e.style.left = p.x+"px"; e.style.top = p.y+"px";
+    e.innerHTML = '<div class="node-head"><span class="dot" style="background:var(--lane-'+(n.lane||"be")+')"></span>'+
+      '<span class="node-name">'+L(n.name)+'</span>'+
+      (n.tradeoff ? '<span class="tag-tradeoff">'+S().tag+'</span>' : '')+'</div>'+
+      '<span class="node-tool">'+(n.tool||"")+'</span>';
+    e.addEventListener("click", function(){ wake(); selectNode(id); });
+    el("canvas").appendChild(e);
+  });
+  for (var i=0;i<CHAIN.length-1;i++){
+    var p = document.createElementNS("http://www.w3.org/2000/svg","path");
+    p.setAttribute("class","edge"); p.setAttribute("id","e"+i);
+    p.setAttribute("d", edgePath(nodePos(CHAIN[i]), nodePos(CHAIN[i+1])));
+    p.setAttribute("marker-end","url(#arr)");
+    g.appendChild(p);
+  }
+}
+
+/* ---------- panel: overview ---------- */
+function overviewHtml(){
+  var pj = DATA.project, s = S();
+  var trades = CHAIN.filter(function(id){return DATA.nodes[id].tradeoff}).length;
+  var lanes = {}; CHAIN.forEach(function(id){lanes[DATA.nodes[id].lane]=1});
+  function sec(t,c){ return c ? '<div class="sec"><div class="sec-title">'+t+'</div><p class="how">'+c+'</p></div>' : ""; }
+  return '<h2 class="pname">'+L(pj.name)+'</h2>'+
+    sec(s.scen, L(pj.scenario)) + sec(s.pain, L(pj.pain)) + sec(s.now, L(pj.now)) +
+    '<div class="ov-stats">'+
+      '<div class="stat"><div class="n">'+CHAIN.length+'</div><div class="l">'+s.parts+'</div></div>'+
+      '<div class="stat"><div class="n">'+Object.keys(lanes).length+'</div><div class="l">'+s.layers+'</div></div>'+
+      '<div class="stat"><div class="n">'+trades+'</div><div class="l">'+s.trades+'</div></div>'+
+    '</div>'+
+    '<p class="ov-hint">'+s.ovHint+'</p>';
+}
+function renderOverview(){ panel.innerHTML = overviewHtml(); el("panelFoot").style.display = "none"; }
+
+/* ---------- panel: node ---------- */
+function chipsHtml(ids, emptyText){
+  if (!ids || !ids.length) return '<span class="chip none">'+emptyText+'</span>';
+  return ids.filter(function(i){return DATA.nodes[i]}).map(function(i){
+    return '<button class="chip" data-go="'+i+'">'+L(DATA.nodes[i].name)+'</button>';
+  }).join("") || '<span class="chip none">'+emptyText+'</span>';
+}
+function renderNode(id){
+  var n = DATA.nodes[id], s = S(), station = CHAIN.indexOf(id)+1;
+  var html = '<h2 class="pname">'+L(n.name)+'</h2>'+
+    '<div class="badges"><span class="badge tool">'+(n.tool||"")+'</span>'+
+    '<span class="badge">'+(n.lane==="db" ? "Database" : s["lane_"+n.lane])+'</span>'+
+    '<span class="badge">'+s.stopOf(station, CHAIN.length)+'</span></div>'+
+    '<p class="role">'+L(n.role)+'</p>';
+  if (n.impact && n.impact.length)
+    html += '<div class="sec"><div class="sec-title">'+s.impact+'</div><ul class="impact">'+
+      n.impact.map(function(i){return '<li>'+L(i)+'</li>'}).join("")+'</ul></div>';
+  html += '<div class="sec"><div class="sec-title">'+s.how+'</div><p class="how">'+L(n.how)+'</p>'+
+    (n.fail ? '<p class="fail"><b>'+s.broke+'</b>'+L(n.fail)+'</p>' : "")+'</div>'+
+    '<div class="sec"><div class="sec-title">'+s.deps+'</div>'+
+    '<div class="dep-row"><span class="dep-key">'+s.needs+'</span><span class="chips">'+chipsHtml(n.needs,s.isStart)+'</span></div>'+
+    '<div class="dep-row"><span class="dep-key">'+s.feeds+'</span><span class="chips">'+chipsHtml(n.feeds,s.isEnd)+'</span></div></div>';
+  if (n.code && n.code.length){
+    var lines = n.code.reduce(function(a,b){return a + String(b.c||"").split("\n").length},0);
+    html += '<div class="sec" id="codeSec"><button class="code-toggle" id="codeToggle">'+
+      '<span>'+s.code(lines)+'</span><span class="arrow">›</span></button><div class="code-body">'+
+      n.code.map(function(b){return '<div class="cblock"><pre></pre><div class="note">'+L(b.n)+'</div>'+
+        (b.risk ? '<div class="risk">'+L(b.risk)+'</div>' : "")+'</div>'}).join("")+'</div></div>';
+  } else {
+    html += '<div class="sec"><div class="sec-title">'+s.code(0).replace(/\s*[（(]0.*$/,"")+'</div><p class="no-code">'+s.noCode+'</p></div>';
+  }
+  if (n.tradeoff){
+    html += '<div class="sec"><div class="sec-title">'+s.trade+'</div><div class="tradeoff">'+
+      '<p>'+s.chose+' <b>'+L(n.tradeoff.a)+'</b>'+(lang==="zh"?"，":", ")+s.over+' <b>'+L(n.tradeoff.b)+'</b>'+(lang==="zh"?"。":".")+'</p>'+
+      '<p><b>'+s.cost+'</b>'+L(n.tradeoff.cost)+'</p>'+
+      '<p><b>'+s.when+'</b>'+L(n.tradeoff.when)+'</p></div></div>';
+  }
+  panel.innerHTML = html; panel.scrollTop = 0;
+  if (n.code && n.code.length){
+    var pres = panel.querySelectorAll(".cblock pre");
+    n.code.forEach(function(b,i){ pres[i].textContent = b.c; });
+    el("codeToggle").addEventListener("click", function(){ el("codeSec").classList.toggle("code-open"); });
+  }
+  panel.querySelectorAll(".chip[data-go]").forEach(function(c){
+    c.addEventListener("click", function(){ selectNode(c.dataset.go); });
+  });
+  el("panelFoot").style.display = "block";
+}
+
+/* ---------- select / highlight ---------- */
+var panel = el("panel"), btnHl = el("btnHl"), legend = el("legend");
+function selectNode(id){
+  selected = id;
+  document.querySelectorAll(".node").forEach(function(e){e.classList.remove("selected")});
+  var t = el("n-"+id); if (t) t.classList.add("selected");
+  renderNode(id);
+  if (hlActive) applyHighlight();
+}
+function applyHighlight(){
+  var idx = CHAIN.indexOf(selected);
+  CHAIN.forEach(function(id,i){
+    var e = el("n-"+id); e.classList.remove("up-hl","down-hl","dim");
+    if (i<idx) e.classList.add("up-hl"); else if (i>idx) e.classList.add("down-hl");
+  });
+  for (var i=0;i<CHAIN.length-1;i++){
+    var e = el("e"+i); e.classList.remove("up","down");
+    e.classList.add(i<idx ? "up" : "down");
+  }
+  legend.classList.add("on"); btnHl.classList.add("active"); btnHl.textContent = S().unhl;
+}
+function clearHighlight(){
+  document.querySelectorAll(".node").forEach(function(e){e.classList.remove("up-hl","down-hl","dim")});
+  document.querySelectorAll(".edge").forEach(function(e){e.classList.remove("up","down")});
+  legend.classList.remove("on"); btnHl.classList.remove("active"); btnHl.textContent = S().hl;
+}
+btnHl.addEventListener("click", function(){ hlActive = !hlActive; hlActive ? applyHighlight() : clearHighlight(); });
+
+/* ---------- intro / wake ---------- */
+function wake(){ document.body.classList.remove("intro"); }
+
+/* ---------- search ---------- */
+el("search").addEventListener("input", function(e){
+  wake();
+  var q = e.target.value.trim().toLowerCase();
+  CHAIN.forEach(function(id){
+    var n = DATA.nodes[id];
+    var hit = !q || L(n.name).toLowerCase().indexOf(q)>=0 || String(n.tool||"").toLowerCase().indexOf(q)>=0;
+    el("n-"+id).classList.toggle("dim", !hit);
+  });
+});
+
+/* ---------- tour (step 0 = summary) ---------- */
+var tourbar = el("tourbar");
+function tourGo(i){
+  tourIdx = i; var s = S(); var total = CHAIN.length;
+  el("tourPrev").disabled = i===0;
+  el("tourNext").disabled = i===total;
+  if (i===0){
+    el("tourStep").textContent = s.intro;
+    el("tourHint").textContent = s.sumHint;
+    selected = null; hlActive = false; clearHighlight();
+    document.querySelectorAll(".node").forEach(function(e){e.classList.remove("selected")});
+    renderOverview();
+  } else {
+    wake();
+    var id = CHAIN[i-1];
+    el("tourStep").textContent = i+"/"+total;
+    el("tourHint").textContent = L(DATA.nodes[id].tourHint) || "";
+    hlActive = true; selectNode(id);
+  }
+}
+el("btnTour").addEventListener("click", function(){ tourOn = true; tourbar.classList.add("on"); tourGo(0); });
+el("tourPrev").addEventListener("click", function(){ tourGo(tourIdx-1); });
+el("tourNext").addEventListener("click", function(){ tourGo(tourIdx+1); });
+el("tourExit").addEventListener("click", function(){ tourOn=false; tourbar.classList.remove("on"); hlActive=false; clearHighlight(); wake(); });
+document.addEventListener("keydown", function(e){
+  if (e.key==="Escape"){ if(tourOn){tourOn=false;tourbar.classList.remove("on")} hlActive=false; clearHighlight(); }
+});
+
+/* ---------- language ---------- */
+function applyLang(){
+  var s = S();
+  el("hBrand").innerHTML = s.brand;
+  el("hProj").textContent = L(DATA.project.name);
+  el("search").placeholder = s.search;
+  el("btnTour").textContent = s.tour;
+  el("tourPrev").textContent = s.prev; el("tourNext").textContent = s.next; el("tourExit").textContent = s.exit;
+  el("llfe").textContent = s.lane_fe; el("llbe").textContent = s.lane_be;
+  el("legUp").innerHTML = s.legUp; el("legDn").innerHTML = s.legDn;
+  el("mTitle").innerHTML = s.mTitle; el("mSub").textContent = s.mSub;
+  el("mLangLabel").textContent = s.mLang; el("mRepoLabel").textContent = s.mRepo;
+  el("mNote").textContent = s.mNote; el("btnAnalyze").textContent = s.analyze; el("btnDemo").textContent = s.demo;
+  btnHl.textContent = hlActive ? s.unhl : s.hl;
+  el("pillEn").classList.toggle("on", lang==="en"); el("pillZh").classList.toggle("on", lang==="zh");
+  el("mEn").classList.toggle("on", lang==="en"); el("mZh").classList.toggle("on", lang==="zh");
+  document.documentElement.lang = lang==="zh" ? "zh-CN" : "en";
+  buildCanvas();
+  if (tourOn) tourGo(tourIdx);
+  else if (selected) selectNode(selected);
+  else renderOverview();
+}
+function setLang(l){ lang = l; applyLang(); }
+el("pillEn").addEventListener("click", function(){setLang("en")});
+el("pillZh").addEventListener("click", function(){setLang("zh")});
+el("mEn").addEventListener("click", function(){setLang("en")});
+el("mZh").addEventListener("click", function(){setLang("zh")});
+
+/* ---------- GitHub analysis ---------- */
+function status(msg, err){ var m = el("mStatus"); m.textContent = msg||""; m.classList.toggle("err", !!err); }
+function ghHeaders(){ return {"Accept":"application/vnd.github.raw"}; }
+function normalizeGenerated(j){
+  // wrap plain strings so L() works, keep structure defensive
+  function W(v){ return v==null ? "" : v; }
+  var nodes = {};
+  (j.chain||[]).forEach(function(id){
+    var n = (j.nodes||{})[id]; if(!n) return;
+    nodes[id] = { lane: (n.lane==="fe"||n.lane==="db") ? n.lane : "be",
+      tool: W(n.tool), grade: n.grade||"routine",
+      needs: n.needs||[], feeds: n.feeds||[],
+      name: W(n.name)||id, role: W(n.role), impact: (n.impact||[]).slice(0,3),
+      how: W(n.how), fail: W(n.fail),
+      code: (n.code||[]).slice(0,2).map(function(b){return {c:W(b.c), n:W(b.n), risk:b.risk?W(b.risk):null}}),
+      tradeoff: n.tradeoff ? {a:W(n.tradeoff.a), b:W(n.tradeoff.b), cost:W(n.tradeoff.cost), when:W(n.tradeoff.when)} : null,
+      tourHint: W(n.tourHint) };
+  });
+  var chain = (j.chain||[]).filter(function(id){return nodes[id]});
+  if (chain.length < 2) throw new Error("chain too short");
+  return { chain: chain, nodes: nodes,
+    project: { name: W((j.project||{}).name)||"Your project",
+      scenario: W((j.project||{}).scenario), pain: W((j.project||{}).pain), now: W((j.project||{}).now) } };
+}
+function buildPrompt(files){
+  var langName = lang==="zh" ? "Simplified Chinese" : "English";
+  return "You explain a codebase to its owner, a vibe coder with zero CS background. Rules: every 'role' states the component's specific job in THIS project (never a generic analogy); 'impact' bullets are user-facing (money, speed, future flexibility), max 2; 'how' is max 3 short sentences, define any jargon in parentheses on first use; 'fail' is 1 sentence on what happens when it breaks; 'code' is at most 1 block of 3-8 real lines from the repo with a 1-sentence plain note, add 'risk' only for lines that call external APIs, write to a database, or are hard to reverse; 'tradeoff' (chose a over b, cost, when to switch) ONLY for consequential decisions, else null. Write ALL human-readable strings in " + langName + ". Keep every string short.\n\n" +
+  "Respond with ONLY valid JSON, no markdown fences, exactly this shape:\n" +
+  '{"project":{"name":"","scenario":"","pain":"","now":""},"chain":["id1","id2"],"nodes":{"id1":{"lane":"fe|be|db","tool":"","grade":"routine|consequential","needs":[],"feeds":["id2"],"name":"","role":"","impact":[""],"how":"","fail":"","code":[{"c":"","n":"","risk":null}],"tradeoff":null,"tourHint":""}}}\n\n' +
+  "chain = the main data flow, 4 to 6 parts, ordered. lane: fe=what users see, be=logic, db=any storage or cloud data (localStorage, files, S3, Supabase all count as db). project.scenario and project.pain must come from the README or code comments; if the repo does not state them, use an empty string — NEVER invent business context.\n\nRepo files:\n" + files;
+}
+async function analyzeRepo(){
+  var url = el("repoUrl").value.trim();
+  var m = url.match(/github\.com\/([^\/\s]+)\/([^\/\s#?]+)/);
+  if (!m){ status(S().eUrl, true); return; }
+  var owner = m[1], repo = m[2].replace(/\.git$/,"");
+  el("btnAnalyze").disabled = true;
+  try{
+    status(S().sFetchList);
+    var meta = await (await fetch("https://api.github.com/repos/"+owner+"/"+repo)).json();
+    if (!meta || !meta.default_branch) throw new Error("repo");
+    var tree = await (await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/git/trees/"+meta.default_branch+"?recursive=1")).json();
+    var all = (tree.tree||[]).filter(function(f){return f.type==="blob"});
+    var prio = ["package.json","readme.md","readme","requirements.txt","pyproject.toml","vite.config","next.config","serverless","docker-compose","schema.prisma","supabase",".env.example","src/main","src/index","src/app","app.py","main.py","server","api/"];
+    var picked = [];
+    prio.forEach(function(p){
+      all.forEach(function(f){
+        if (picked.length>=8) return;
+        if (f.path.toLowerCase().indexOf(p)>=0 && picked.indexOf(f.path)<0 && (f.size||0)<60000) picked.push(f.path);
+      });
+    });
+    if (!picked.length) picked = all.slice(0,5).map(function(f){return f.path});
+    status(S().sFetchFiles + " ("+picked.length+")");
+    var texts = [];
+    for (var i=0;i<picked.length;i++){
+      try{
+        var r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+picked[i], {headers: ghHeaders()});
+        if (r.ok){ var t = await r.text(); texts.push("=== "+picked[i]+" ===\n"+t.slice(0,3500)); }
+      }catch(e){}
+    }
+    if (!texts.length) throw new Error("repo");
+    status(S().sAsk);
+    var resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ model:"claude-sonnet-4-6", max_tokens:1000,
+        messages:[{role:"user", content: buildPrompt(texts.join("\n\n").slice(0,26000))}] })
+    });
+    var data = await resp.json();
+    var text = (data.content||[]).filter(function(b){return b.type==="text"}).map(function(b){return b.text}).join("\n");
+    var clean = text.replace(/```json|```/g,"").trim();
+    var parsed = normalizeGenerated(JSON.parse(clean));
+    DATA = parsed; CHAIN = DATA.chain;
+    selected = null; hlActive = false; tourOn = false; tourbar.classList.remove("on");
+    el("modalBg").style.display = "none";
+    document.body.classList.add("intro");
+    applyLang();
+    status("");
+  }catch(err){
+    status(String(err).indexOf("repo")>=0 ? S().eRepo : S().eGen, true);
+  }
+  el("btnAnalyze").disabled = false;
+}
+el("btnAnalyze").addEventListener("click", analyzeRepo);
+el("btnDemo").addEventListener("click", function(){
+  DATA = DEMO; CHAIN = DATA.chain;
+  el("modalBg").style.display = "none";
+  document.body.classList.add("intro");
+  applyLang();
+});
+
+/* ---------- boot ---------- */
+applyLang();
+renderOverview();
+</script>
+</body>
+</html>
