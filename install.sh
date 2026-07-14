@@ -9,7 +9,7 @@
 #   ./install.sh --help
 #
 # Curl-pipe usage (after the repo is public):
-#   curl -fsSL https://raw.githubusercontent.com/Jia0612/understand-everything/main/install.sh | bash -s codex
+#   curl -fsSL https://raw.githubusercontent.com/Jia0612/understand-everything-for-beginners/main/install.sh | bash -s codex
 #
 # Environment:
 #   UE_REPO_URL  Override clone source (URL or local path)
@@ -19,7 +19,7 @@
 
 set -euo pipefail
 
-REPO_URL="${UE_REPO_URL:-https://github.com/Jia0612/understand-everything.git}"
+REPO_URL="${UE_REPO_URL:-https://github.com/Jia0612/understand-everything-for-beginners.git}"
 REPO_DIR="${UE_DIR:-$HOME/.understand-everything/repo}"
 SKILL_NAME="explain-my-app"
 

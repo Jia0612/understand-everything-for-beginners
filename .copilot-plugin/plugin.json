@@ -3,8 +3,8 @@
   "description": "Turn any vibe-coded project into an interactive plain-language diagram — every part explained: what it does, why it was chosen, and what the tradeoff was",
   "version": "0.1.0",
   "author": { "name": "Jia0612" },
-  "homepage": "https://github.com/Jia0612/understand-everything",
-  "repository": "https://github.com/Jia0612/understand-everything",
+  "homepage": "https://github.com/Jia0612/understand-everything-for-beginners",
+  "repository": "https://github.com/Jia0612/understand-everything-for-beginners",
   "license": "MIT",
   "keywords": ["codebase-explainer", "vibe-coding", "plain-language", "architecture", "dashboard"],
   "skills": "./plugin/skills/"

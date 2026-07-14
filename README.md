@@ -9,7 +9,7 @@ No API keys, no hosted service: the analysis runs inside the AI coding agent you
 ### Claude Code
 
 ```
-/plugin marketplace add Jia0612/understand-everything
+/plugin marketplace add Jia0612/understand-everything-for-beginners
 /plugin install understand-everything
 ```
 
@@ -18,7 +18,7 @@ Then, inside any project: `/explain-my-app` — it scans the project, writes the
 ### OpenAI Codex / Gemini CLI / OpenCode
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Jia0612/understand-everything/main/install.sh | bash -s codex
+curl -fsSL https://raw.githubusercontent.com/Jia0612/understand-everything-for-beginners/main/install.sh | bash -s codex
 ```
 
 Restart your CLI, then invoke with `$explain-my-app` (Codex uses `$` instead of `/`), or just ask: "use the explain-my-app skill".
