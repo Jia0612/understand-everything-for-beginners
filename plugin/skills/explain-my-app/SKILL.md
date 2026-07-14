@@ -27,7 +27,13 @@ Base directory of this skill: referred to as `$SKILL` below.
    ```
    On failure: fix using the printed errors, regenerate **once**, validate again. On second failure: delete the broken file, report the errors to the user in plain language, stop. Never leave a broken app-map.json on disk.
 
-5. **Show**: until the dashboard exists, paste the JSON into `docs/prototype.html` by replacing the `DEMO` object (plain strings are fine — the prototype's `L()` helper falls back to them when a value isn't bilingual), or tell the user to run the CLI (M4+).
+5. **Show**: run the CLI from the project directory — it serves the dashboard and picks up `.ue/app-map.json` automatically, then opens the browser:
+   ```
+   npx understand-everything
+   ```
+   In a development checkout of this repo, use `node <REPO>/cli/bin.mjs` instead (build the dashboard first if `packages/dashboard/dist` is missing: `npm run build --workspace packages/dashboard`).
+
+Note for non-Claude agents: on Codex this skill is invoked as `$explain-my-app` (Codex uses `$`, not `/`); anywhere else, plain language works too: "use the explain-my-app skill".
 
 ## Hard rules
 

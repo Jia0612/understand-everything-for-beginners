@@ -2,15 +2,7 @@
   "name": "understand-everything",
   "description": "Turn any vibe-coded project into an interactive plain-language diagram — every part explained: what it does, why it was chosen, and what the tradeoff was",
   "version": "0.1.0",
-  "author": {
-    "name": "Riley"
-  },
   "license": "MIT",
-  "keywords": [
-    "codebase-explainer",
-    "vibe-coding",
-    "plain-language",
-    "architecture",
-    "dashboard"
-  ]
+  "keywords": ["codebase-explainer", "vibe-coding", "plain-language", "architecture", "dashboard"],
+  "skills": "./plugin/skills/"
 }

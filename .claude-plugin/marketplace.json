@@ -1,12 +1,15 @@
 {
   "name": "understand-everything",
+  "owner": {
+    "name": "Riley"
+  },
   "metadata": {
     "description": "Plain-language app explainer for vibe coders — interactive diagram of any project's Frontend / Backend / Database, with tradeoffs"
   },
   "plugins": [
     {
       "name": "understand-everything",
-      "source": "./"
+      "source": "./plugin"
     }
   ]
 }
