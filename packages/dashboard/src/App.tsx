@@ -40,6 +40,12 @@ export default function App() {
     })();
   }, [setExternal]);
 
+  // 主题试穿:网址加 ?theme=paper 或 ?theme=ink 即可切换整套配色字体(定稿后改为默认值)
+  useEffect(() => {
+    const t = new URLSearchParams(location.search).get('theme');
+    if (t === 'paper' || t === 'ink') document.documentElement.dataset.theme = t;
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') escape(); };
     document.addEventListener('keydown', onKey);

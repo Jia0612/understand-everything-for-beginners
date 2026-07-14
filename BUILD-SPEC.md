@@ -158,6 +158,8 @@ Web version with hosted analysis, accounts, Supabase persistence, languages beyo
 - **2026-07-13** §4 amended: generate-prompt.md carries a "mom test" anti-jargon section with banned insider vocabulary (first M1 review verdict: too much jargon).
 - **2026-07-13** §9 amended: an OpenAI/Codex adapter is IN scope (user decision) — implemented as `adapters/codex/explain-my-app.md`, a thin instruction file; core stays agnostic, no API integration (the product never calls LLM APIs directly).
 
+- **2026-07-13 (second review round)** §3: code blocks gain optional `lines` — per-line Feynman translations, one entry per code line, required for new generations (generate-prompt.md). §5: onboarding modal slimmed to title + language + one start button (GitHub field and demo/analyze buttons removed, user decision); right panel is drag-resizable 280–640px. §6: all component colors routed through CSS variables; theme candidates `paper` and `ink` selectable via ?theme= (docs/theme-proposals.html holds the rationale; default remains the original gold until the user picks).
+
 ## 11. Working style for this session
 
 Explain consequential choices before implementing (feynman-explainer applies). When a decision could reasonably go two ways, present the options with what the user gains and gives up, and let them pick. Keep every explanation shorter than the code it explains.

@@ -50,7 +50,7 @@ export function GraphView() {
         <svg className="edges" style={{ width }}>
           <defs>
             <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-              <path d="M0,0 L8,4 L0,8 z" fill="rgba(212,165,116,.5)" />
+              <path d="M0,0 L8,4 L0,8 z" style={{ fill: 'var(--edge-arrow)' }} />
             </marker>
           </defs>
           <g>
