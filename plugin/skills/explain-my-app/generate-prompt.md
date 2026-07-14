@@ -82,9 +82,16 @@ Every technical term gets a plain-language definition in parentheses on first us
 **`grade` gates content** — grade measures *product consequence*, not code complexity:
 - `trivial`: role + how only (impact `[]`, fail `""`, tradeoff null)
 - `routine`: adds impact + fail
-- `consequential`: adds the tradeoff block — required. A part is consequential **only when a real system-design choice was made**: architecture, storage, external services, build strategy — anything expensive to reverse or with ongoing cost. From the skill: *"any case where two experienced engineers could reasonably recommend different approaches."*
+- `consequential`: adds the tradeoff block — required. A part is consequential **only when a real system-design choice was made**: architecture, storage, external services, build strategy, runtime shape, data ownership, security boundary, or anything expensive to reverse or with ongoing operating cost. From the skill: *"any case where two experienced engineers could reasonably recommend different approaches."*
 
-  **System design only (user rule, 2026-07-13).** Workflow habits, content conventions, or rules an author merely wrote down in a doc do NOT earn a tradeoff — even if they were deliberate decisions. Litmus: *would two engineers argue about how to build it?* → tradeoff. *Would two product people argue about how it should feel to use?* → no tradeoff; mention the decision in `impact` or `how` instead. A part implemented as a Markdown file gets a tradeoff only if that file decides how the system is built or runs (e.g. parallel vs sequential production), never just because "it's the spec".
+  **Tradeoff is for system design only (user rule, 2026-07-13).** Do not write a tradeoff just because the author made a deliberate choice. A rule in a Markdown file, a content convention, a prompt instruction, or a workflow preference can be important, but it is not automatically a system-design tradeoff.
+
+  Use this matrix before setting `grade: "consequential"`:
+
+  - **Always consider tradeoff:** database choice, cache choice, queue/background job choice, hosted service vs self-hosted, local-only vs cloud, browser-only vs server, one shared engine vs generated code at runtime, parallel processing vs sequential processing, plugin architecture vs one hard-coded flow, storing user data vs recomputing it, public API vs private/internal API.
+  - **Usually no tradeoff:** `.md` instruction files, prompt wording, writing style, course chapter structure, labels/copy, visual tone, onboarding wording, "ask approval first vs just build" product behavior, content quality rules, naming conventions, folder organization that does not affect runtime behavior.
+  - **Conditional:** a Markdown/config file may get a tradeoff only if it *controls how the system runs*, not merely what it says. Example yes: a config chooses parallel workers vs one worker, or local files vs S3. Example no: `SKILL.md` says "do not ask for approval" or "use 4–6 chapters".
+  - **Litmus:** if the serious alternative would require changing code paths, storage, services, deployment, runtime cost, reliability, privacy, or speed, it may be a tradeoff. If the serious alternative mainly changes taste, copy, pedagogy, or review workflow, keep it `routine` and explain it in `impact` or `how`.
 
 **`tradeoff`**: `a` = what was chosen, `b` = the serious alternative, `cost` = what the owner pays for the choice, `when` = the concrete signal that means it's time to switch ("when rows pass 100M, move to BigQuery"). `when` is an action trigger, not a vague "if you scale".
 

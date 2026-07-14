@@ -2,7 +2,10 @@
   "version": 1,
   "language": "both",
   "project": {
-    "name": { "en": "Codebase to Course", "zh": "Codebase to Course(代码库变课程)" },
+    "name": {
+      "en": "Codebase to Course",
+      "zh": "Codebase to Course(代码库变课程)"
+    },
     "scenario": {
       "en": "Built for vibe coders — people who build software by telling AI what to do, without formal training. They've made something that works, or found an open-source project they like, and want to truly understand it.",
       "zh": "给 vibe coder 用的——就是用大白话指挥 AI 写软件、没受过科班训练的人。他们做出了能跑的东西,或者在 GitHub 上看中了别人的开源项目,想真正搞懂它。"
@@ -16,15 +19,29 @@
       "zh": "对着任何仓库说一句话,就能拿到一门网页课程:一章章往下翻,真代码旁边配人话解释,还有小测验和动画。双击就能打开,断网也能用。"
     }
   },
-  "chain": ["skill", "analysis", "curriculum", "briefs", "assets", "modules", "build", "course"],
+  "chain": [
+    "skill",
+    "analysis",
+    "curriculum",
+    "briefs",
+    "assets",
+    "modules",
+    "build",
+    "course"
+  ],
   "nodes": {
     "skill": {
       "lane": "be",
       "tool": "SKILL.md",
       "grade": "routine",
       "needs": [],
-      "feeds": ["analysis"],
-      "name": { "en": "The instruction manual", "zh": "总指挥说明书" },
+      "feeds": [
+        "analysis"
+      ],
+      "name": {
+        "en": "The instruction manual",
+        "zh": "总指挥说明书"
+      },
       "role": {
         "en": "Takes the request \"turn this codebase into a course\" and walks the AI through four steps until the course exists.",
         "zh": "接到「把这个代码库变成课程」的请求后,带着 AI 走完四步,把课程从无到有做出来。"
@@ -75,9 +92,16 @@
       "lane": "be",
       "tool": "Claude",
       "grade": "routine",
-      "needs": ["skill"],
-      "feeds": ["curriculum"],
-      "name": { "en": "Reading the code", "zh": "读懂代码" },
+      "needs": [
+        "skill"
+      ],
+      "feeds": [
+        "curriculum"
+      ],
+      "name": {
+        "en": "Reading the code",
+        "zh": "读懂代码"
+      },
       "role": {
         "en": "Reads through the target codebase: what the main parts are, how data moves between them, which tools it uses.",
         "zh": "把目标代码库通读一遍:有哪些主要部件、数据在它们之间怎么流动、用了哪些工具。"
@@ -120,9 +144,16 @@
       "lane": "be",
       "tool": "SKILL.md · Phase 2",
       "grade": "routine",
-      "needs": ["analysis"],
-      "feeds": ["briefs"],
-      "name": { "en": "Designing the outline", "zh": "设计课程大纲" },
+      "needs": [
+        "analysis"
+      ],
+      "feeds": [
+        "briefs"
+      ],
+      "name": {
+        "en": "Designing the outline",
+        "zh": "设计课程大纲"
+      },
       "role": {
         "en": "Turns what it learned into a 4–6 chapter course: starting from the screens you've seen, ending at the code underneath.",
         "zh": "把读到的东西安排成 4–6 章的课程:从「你见过的界面」讲起,一路讲到底下的代码。"
@@ -165,9 +196,16 @@
       "lane": "be",
       "tool": "briefs/",
       "grade": "consequential",
-      "needs": ["curriculum"],
-      "feeds": ["modules"],
-      "name": { "en": "Work sheets (big projects only)", "zh": "分工单(大项目才用)" },
+      "needs": [
+        "curriculum"
+      ],
+      "feeds": [
+        "modules"
+      ],
+      "name": {
+        "en": "Work sheets (big projects only)",
+        "zh": "分工单(大项目才用)"
+      },
       "role": {
         "en": "For big projects, writes one work sheet per chapter — the teaching plan plus the exact code snippets to show — so several AI helpers can each write a chapter at the same time.",
         "zh": "项目大的时候,先给每一章写一张「分工单」:教学思路 + 提前剪好的代码片段,让几个 AI 帮手同时各写一章。"
@@ -201,8 +239,14 @@
         }
       ],
       "tradeoff": {
-        "a": { "en": "Work sheets + several AI helpers writing at once", "zh": "分工单 + 几个 AI 帮手同时写" },
-        "b": { "en": "One AI writing every chapter, start to finish", "zh": "一个 AI 从头到尾顺着写完" },
+        "a": {
+          "en": "Work sheets + several AI helpers writing at once",
+          "zh": "分工单 + 几个 AI 帮手同时写"
+        },
+        "b": {
+          "en": "One AI writing every chapter, start to finish",
+          "zh": "一个 AI 从头到尾顺着写完"
+        },
         "cost": {
           "en": "One extra step (writing the sheets), and chapters may differ slightly in voice — a final read-through is needed to smooth them out.",
           "zh": "多一道写单子的工序;各章口吻可能有细微差别,最后要再通读一遍把它们捋顺。"
@@ -222,8 +266,14 @@
       "tool": "references/",
       "grade": "consequential",
       "needs": [],
-      "feeds": ["modules", "build"],
-      "name": { "en": "Ready-made parts shelf", "zh": "现成零件仓库" },
+      "feeds": [
+        "modules",
+        "build"
+      ],
+      "name": {
+        "en": "Ready-made parts shelf",
+        "zh": "现成零件仓库"
+      },
       "role": {
         "en": "Holds the pre-built pieces every course reuses: 1,195 lines of styling, a 498-line interaction engine, the page frame and the assembly script.",
         "zh": "存放每门课都直接取用的现成零件:1195 行的外观样式、498 行的互动引擎、页面骨架和拼装脚本。"
@@ -264,8 +314,14 @@
         }
       ],
       "tradeoff": {
-        "a": { "en": "Pre-built parts, copied as-is", "zh": "用现成零件,原样复制" },
-        "b": { "en": "Let the AI write fresh styling and interactions for each course", "zh": "每门课让 AI 现写外观和互动代码" },
+        "a": {
+          "en": "Pre-built parts, copied as-is",
+          "zh": "用现成零件,原样复制"
+        },
+        "b": {
+          "en": "Let the AI write fresh styling and interactions for each course",
+          "zh": "每门课让 AI 现写外观和互动代码"
+        },
         "cost": {
           "en": "Every course looks identical; personalization is basically limited to swapping the accent color.",
           "zh": "所有课程长得一模一样,个性化基本只剩换个主题色。"
@@ -284,9 +340,17 @@
       "lane": "be",
       "tool": "content-philosophy.md",
       "grade": "routine",
-      "needs": ["briefs", "assets"],
-      "feeds": ["build"],
-      "name": { "en": "Writing the chapters", "zh": "写章节" },
+      "needs": [
+        "briefs",
+        "assets"
+      ],
+      "feeds": [
+        "build"
+      ],
+      "name": {
+        "en": "Writing the chapters",
+        "zh": "写章节"
+      },
       "role": {
         "en": "Writes each chapter as a web page section: real code next to plain English, a quiz, an animation — one file per chapter.",
         "zh": "把每一章写成网页片段:真代码配人话对照、一个小测验、一段动画——一章一个文件。"
@@ -329,9 +393,17 @@
       "lane": "be",
       "tool": "build.sh",
       "grade": "trivial",
-      "needs": ["modules", "assets"],
-      "feeds": ["course"],
-      "name": { "en": "Putting it together", "zh": "拼装" },
+      "needs": [
+        "modules",
+        "assets"
+      ],
+      "feeds": [
+        "course"
+      ],
+      "name": {
+        "en": "Putting it together",
+        "zh": "拼装"
+      },
       "role": {
         "en": "Joins the page frame, all chapters and the footer, in order, into one file: index.html.",
         "zh": "把页面骨架、各章内容、页脚按顺序连成一个文件:index.html。"
@@ -362,9 +434,14 @@
       "lane": "fe",
       "tool": "index.html",
       "grade": "routine",
-      "needs": ["build"],
+      "needs": [
+        "build"
+      ],
       "feeds": [],
-      "name": { "en": "The finished course", "zh": "成品课程" },
+      "name": {
+        "en": "The finished course",
+        "zh": "成品课程"
+      },
       "role": {
         "en": "What the learner actually gets: a web course that opens with a double-click — scrolling chapters, quizzes, animations, and hover-to-explain on every term.",
         "zh": "学员真正拿到手的东西:双击就能打开的网页课程——滚动翻章、小测验、动画,术语悬停就有解释。"
@@ -404,5 +481,8 @@
       }
     }
   },
-  "diff": { "changed": [], "affected": [] }
+  "diff": {
+    "changed": [],
+    "affected": []
+  }
 }
