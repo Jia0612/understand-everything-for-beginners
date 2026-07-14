@@ -5,7 +5,7 @@
     "name": "Ad Data Ingestion Pipeline",
     "scenario": "The marketing team runs ads on 10+ media platforms and tunes budgets daily on spend, CTR, and CPA — the fresher the numbers, the better the calls.",
     "pain": "Data was pulled by hand from each platform's console and stitched into spreadsheets: 10+ hours a week, and at best day-old numbers — always making today's decisions on yesterday's data.",
-    "now": "Every hour the pipeline pulls from all platforms, normalizes and dedupes the data, and stores it in a database. The team self-serves on a BI dashboard — manual exports no longer exist."
+    "now": "Every hour, the app pulls numbers from every ad platform, makes the field names match, keeps repeat records from being counted twice, and saves the clean result in a database. The team checks a dashboard themselves — manual exports no longer exist."
   },
   "chain": [
     "scheduler",
@@ -30,7 +30,7 @@
         "Data freshness went from daily to hourly; the numbers the team sees are at most an hour old.",
         "No one runs scripts by hand anymore — that is where the 10+ saved hours a week come from."
       ],
-      "how": "On the hour, AWS wakes a small piece of code that does exactly one thing: tell the Fetch Layer to start pulling. Then it sleeps until the next hour.",
+      "how": "On the hour, AWS wakes a small piece of code that does exactly one thing: tell the Fetch Layer to start pulling numbers. Then it sleeps until the next hour.",
       "fail": "If one run fails, that hour's data has a gap; the next run fires as usual — nothing cascades.",
       "code": [
         {
@@ -50,7 +50,7 @@
         }
       ],
       "tradeoff": null,
-      "tourHint": "Stop 1 · Starts the whole pipeline every hour — hourly freshness is decided right here."
+      "tourHint": "Stop 1 · Starts the hourly pull — this is why the dashboard is never more than about an hour behind."
     },
     "fetch": {
       "lane": "be",
@@ -65,11 +65,11 @@
       "name": "Fetch Layer",
       "role": "Pulls raw ad data from 10+ media platforms.",
       "impact": [
-        "10+ platforms, each with its own way of connecting — the most maintenance-heavy part of the project.",
-        "If one platform changes its API, only that plugin breaks; the rest keep running.",
-        "Adding a new platform means writing one new plugin from the template — nothing else changes."
+        "10+ platforms, each with its own way of sharing data — this is the part most likely to need future fixes.",
+        "If one platform changes its API, only that platform's connector breaks; the rest keep running.",
+        "Adding a new platform means adding one new connector that follows the same pattern — the rest of the app stays put."
       ],
-      "how": "One small plugin per platform, all the same shape: a single getData(params) interface (an API is simply an agreed way for two programs to talk). When the Scheduler fires, every plugin pulls from its own platform.",
+      "how": "There is one small connector per platform. Each connector gives the rest of the app the same kind of answer, even though TikTok, Google, and Meta all make you ask differently. An API is simply an agreed way for two programs to talk.",
       "fail": "If a platform's API is down or changed, only that platform's data is missing; the rest keep running, and the gap is backfilled next round.",
       "code": [
         {
@@ -79,17 +79,17 @@
         },
         {
           "c": "  async getData(params) {\n    const res = await fetch(API_URL, { headers: auth() });\n    return res.json();\n  },\n};",
-          "n": "Every plugin implements the same getData — the rest of the code never cares how differently TikTok and Google behave.",
-          "risk": "⚠ This line makes a real API call and spends your quota on that platform. The rate limiter at the Redis stop exists for this line."
+          "n": "Every connector has the same getData function, so the rest of the app can ask every platform the same way.",
+          "risk": "⚠ This line makes a real API call and uses part of that platform's allowed call budget. Redis slows calls down so the platform does not block you."
         }
       ],
       "tradeoff": {
-        "a": "hand-written adaptors (plugins)",
+        "a": "one hand-written connector per platform",
         "b": "official SDKs per platform",
-        "cost": "Every platform's integration details are yours to maintain; when a platform changes, you patch.",
-        "when": "With only 2-3 major platforms and stable SDKs, SDKs are less work. With 10+ platforms and one unified interface, adaptors win — the case here."
+        "cost": "Every platform's quirks are yours to maintain; when a platform changes, you patch that connector.",
+        "when": "With only 2-3 major platforms and stable SDKs, SDKs are less work. With 10+ platforms that all need to feed the same dashboard, one connector pattern is easier to control."
       },
-      "tourHint": "Stop 2 · Pulls raw data from 10+ platforms — the most maintenance-heavy part."
+      "tourHint": "Stop 2 · Pulls raw numbers from 10+ platforms — this is the part most likely to need upkeep."
     },
     "normalize": {
       "lane": "be",
@@ -101,28 +101,28 @@
       "feeds": [
         "redis"
       ],
-      "name": "Normalize Layer",
-      "role": "Unifies each platform's differently-named fields into one standard JSON format.",
+      "name": "Field-name cleaner",
+      "role": "Turns each platform's differently named fields into one shared format.",
       "impact": [
         "\"Impressions\" on the dashboard always means one thing, whichever platform the data came from.",
-        "However odd a new platform's fields are, changes stay inside this layer — nothing downstream moves."
+        "When a new platform uses odd field names, the fix stays here — the later parts do not need to move."
       ],
       "how": "Platforms name the same metric differently: some say views, some say impressions. This layer renames fields against one mapping table, then passes the data on.",
       "fail": "A field missing from the mapping table is skipped and logged — unrecognized data is never passed downstream.",
       "code": [
         {
           "c": "const FIELD_MAP = {\n  tiktok: { views: \"impressions\", cost: \"spend\" },\n  meta:   { impressions: \"impressions\", spend: \"spend\" },\n};",
-          "n": "The mapping table itself: platform names on the left, unified field names on the right.",
+          "n": "This is the translation list: platform names on the left, the app's shared field names on the right.",
           "risk": null
         },
         {
           "c": "export const normalize = (src, row) =>\n  mapKeys(row, FIELD_MAP[src]);",
-          "n": "The whole operation is one line — swap field names per the table.",
+          "n": "This one line swaps each platform's field names into the app's shared names.",
           "risk": null
         }
       ],
       "tradeoff": null,
-      "tourHint": "Stop 3 · Field names get unified here; downstream never cares where data came from."
+      "tourHint": "Stop 3 · Field names get cleaned here, so the later parts do not care where the data came from."
     },
     "redis": {
       "lane": "be",
@@ -134,33 +134,33 @@
       "feeds": [
         "db"
       ],
-      "name": "Redis cache & rate limit",
-      "role": "Drops duplicate data and throttles calls to each platform's API so you don't get banned.",
+      "name": "Redis safety check",
+      "role": "Keeps the same record from being counted twice and slows API calls down so platforms do not block you.",
       "impact": [
-        "The same ad record never enters the database twice, so report numbers don't inflate.",
+        "The same ad record never enters the database twice, so report numbers do not get inflated.",
         "No API key gets banned for calling too hard — one ban can mean days of missing data."
       ],
-      "how": "Each record gets a fingerprint; Redis checks whether that fingerprint was seen before and drops it if so. Before every API call, the hour's call count is checked — over quota means waiting for the next hour.",
-      "fail": "If Redis goes down, the pipeline pauses rather than running unprotected — hammering APIs with no rate limit is worse than losing an hour.",
+      "how": "Each record gets a fingerprint, like a short ID made from its important fields. Redis checks whether that fingerprint was seen before and drops the record if it was. Before every API call, Redis also checks how many calls were already made this hour; over the limit means waiting.",
+      "fail": "If Redis goes down, the app pauses the pull rather than calling platforms too aggressively — losing one hour is safer than getting blocked.",
       "code": [
         {
           "c": "const fp = hash(row.platform + row.ad_id + row.date);\nconst isNew = await redis.set(fp, 1, { NX: true, EX: 86400 });\nif (!isNew) return;",
-          "n": "Dedup in three lines. NX means \"write only if never seen\" — a failed write means a duplicate.",
+          "n": "This keeps repeats out. NX means \"save this only if it has not been seen before\" — if Redis says no, the record is a duplicate.",
           "risk": null
         },
         {
           "c": "const used = await redis.incr('quota:' + platform + ':' + hour);\nif (used > LIMIT) await sleepUntilNextHour();",
-          "n": "Rate limiting is just counting: which call of the hour is this; over the line, wait.",
+          "n": "This is the speed limit: count how many times we called this platform this hour; if it is too many, wait.",
           "risk": null
         }
       ],
       "tradeoff": {
-        "a": "Redis for dedup and rate limiting",
+        "a": "Redis for repeat checks and call speed limits",
         "b": "a database unique index alone",
-        "cost": "One more component to run — extra memory and operational overhead.",
-        "when": "At small volume (a few thousand rows a day) a unique index is enough and Redis can be cut. At 10+ platforms pulled hourly, the volume justifies it."
+        "cost": "One more moving part to run and watch.",
+        "when": "At small volume, a database rule is enough and Redis can be removed. At 10+ platforms pulled hourly, Redis earns its keep."
       },
-      "tourHint": "Stop 4 · Dedup + rate limiting — this keeps your API keys alive."
+      "tourHint": "Stop 4 · Repeat checks and speed limits — this keeps your API keys from getting blocked."
     },
     "db": {
       "lane": "db",
@@ -173,27 +173,27 @@
         "dash"
       ],
       "name": "Database",
-      "role": "Stores the cleaned ad data and serves the Dashboard's queries.",
+      "role": "Stores the cleaned ad data and gives the dashboard the numbers it asks for.",
       "impact": [
-        "Every number on the Dashboard is queried from here — if it's down, reports go blank.",
+        "Every number on the Dashboard comes from here — if it is down, reports go blank.",
         "Data is stored by day: \"last 7 days\" is fast, \"all of last year\" is slow. That's the current design's boundary."
       ],
-      "how": "Data cleared by Redis is written row by row into the ads_daily table; Looker Studio connects directly and runs aggregate queries (the kind that sums many rows into one number on a chart).",
-      "fail": "If the database is unreachable, the batch waits in a queue for retry — nothing is lost; the Dashboard shows stale data meanwhile.",
+      "how": "Data cleared by Redis is written row by row into the ads_daily table. Looker Studio connects directly and asks questions like \"what was total spend last week?\" The database answers by adding many saved rows into one chart number.",
+      "fail": "If the database is unreachable, the app waits and tries again later — nothing is lost; the Dashboard shows older data meanwhile.",
       "code": [
         {
           "c": "CREATE TABLE ads_daily (\n  platform    text,\n  ad_id       text,\n  date        date,\n  impressions bigint,\n  spend       numeric,\n  PRIMARY KEY (platform, ad_id, date)\n);",
-          "n": "The entire store is one table. The three-part primary key guarantees one row per ad per day — the last line of defense for dedup.",
+          "n": "The whole store is one table. The three-part primary key means one ad can only have one row per day — the final guard against double-counting.",
           "risk": "⚠ Changing this table's structure (columns, primary key) is the hardest thing in the project to undo — everything is built on it. Back up first."
         }
       ],
       "tradeoff": {
         "a": "PostgreSQL",
         "b": "BigQuery",
-        "cost": "Past hundreds of millions of rows, large aggregate queries struggle.",
+        "cost": "Past hundreds of millions of rows, big dashboard questions can get slow.",
         "when": "When the team runs \"two years, all platforms\" analyses or rows pass 100M, move to BigQuery. Until then PostgreSQL is cheaper and simpler."
       },
-      "tourHint": "Stop 5 · Where the data finally lives — every Dashboard number is queried from here."
+      "tourHint": "Stop 5 · Where the data finally lives — every Dashboard number comes from here."
     },
     "dash": {
       "lane": "fe",
@@ -209,11 +209,11 @@
         "The team self-serves; you never manually export a weekly report again.",
         "This part is bought, not built — zero lines of frontend code."
       ],
-      "how": "Looker Studio connects straight to PostgreSQL. You configure charts by drag-and-drop; it generates the queries.",
-      "fail": "When a chart errors, the problem is almost always upstream — check whether today's data is in the Database before suspecting the chart config.",
+      "how": "Looker Studio connects straight to PostgreSQL. You build charts by dragging fields around; Looker writes the database questions for you.",
+      "fail": "When a chart errors, the problem is almost always earlier in the flow — check whether today's data reached the Database before blaming the chart.",
       "code": null,
       "tradeoff": null,
-      "tourHint": "Stop 6 · The team self-serves here — the pipeline closes its loop."
+      "tourHint": "Stop 6 · The team checks numbers here themselves — this is the visible payoff."
     }
   },
   "diff": {

@@ -21,7 +21,7 @@
     "skill": {
       "lane": "be",
       "tool": "SKILL.md",
-      "grade": "consequential",
+      "grade": "routine",
       "needs": [],
       "feeds": ["analysis"],
       "name": { "en": "The instruction manual", "zh": "总指挥说明书" },
@@ -35,8 +35,8 @@
           "zh": "你不用会任何工具:对 Claude 说一句话,就能拿到成品课程。"
         },
         {
-          "en": "It's written to skip the approval step: you see a finished course first, not an outline to review — faster, at a price (see the tradeoff below).",
-          "zh": "它规定「不给你看大纲、直接开建」——你第一眼看到的就是成品,省去来回审批,但也有代价(见下面的取舍)。"
+          "en": "It's written to skip the approval step: you always see a finished course first, never an outline to review. If the direction is off, you say so and it rebuilds.",
+          "zh": "它规定「不给你看大纲、直接开建」——你第一眼看到的永远是成品;方向不对你直接说,它重做一版。"
         }
       ],
       "how": {
@@ -65,18 +65,7 @@
           "risk": null
         }
       ],
-      "tradeoff": {
-        "a": { "en": "Build the finished course first, fix it after", "zh": "直接做出成品,不满意再改" },
-        "b": { "en": "Show you an outline and wait for your OK first", "zh": "先给你看大纲,你点头了再动工" },
-        "cost": {
-          "en": "If the AI misreads what the course should be, the whole thing gets rebuilt — one full round of generation time and AI budget wasted.",
-          "zh": "如果 AI 把课程方向理解偏了,就得整门课重做——白花一轮生成时间和 AI 额度。"
-        },
-        "when": {
-          "en": "If several courses in a row come back with the wrong structure, flip this rule to \"outline first, build after your OK\".",
-          "zh": "如果你连着几次拿到的课程结构都不对味,就该把这条规则改成「先出大纲、你点头再建」。"
-        }
-      },
+      "tradeoff": null,
       "tourHint": {
         "en": "Stop 1 · The conductor: one request in, four steps later a course comes out.",
         "zh": "第 1 站 · 总指挥:一句话进来,四步之后一门课出去。"
@@ -136,7 +125,7 @@
       "name": { "en": "Designing the outline", "zh": "设计课程大纲" },
       "role": {
         "en": "Turns what it learned into a 4–6 chapter course: starting from the screens you've seen, ending at the code underneath.",
-        "zh": "把读到的东西编排成 4–6 章的课程:从「你见过的界面」讲起,一路讲到底下的代码。"
+        "zh": "把读到的东西安排成 4–6 章的课程:从「你见过的界面」讲起,一路讲到底下的代码。"
       },
       "impact": [
         {

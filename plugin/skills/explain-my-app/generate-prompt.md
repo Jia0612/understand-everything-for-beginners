@@ -56,13 +56,25 @@ From the skill, verbatim — this is the bar:
 
 **`impact` — user-facing consequences only**: money, speed, future flexibility, what breaks, what the owner no longer has to do by hand. Never mechanism. "Visitors will see results in about a second" is impact; "this implements an asynchronous fetch pattern" is not. Order the items by what the owner cares about most.
 
-**Jargon**: every technical term gets a plain-language definition in parentheses on first use *within that node*. (An API is simply an agreed way for two programs to talk.) Terms already defined in an earlier chain node may be reused bare in later ones — the tour reads in chain order.
+**Technical names may stay; filler jargon may not.** Keep real names the owner will hear again from engineers or dashboards: `Fetch Layer`, `API`, `Redis`, `PostgreSQL`, `cron`, `SDK`, `React`, file names, table names, function names, and product names. Those are labels for real things. But the sentence around the label must be plain enough that the owner still understands the point if they skip the label.
+
+Every technical term gets a plain-language definition in parentheses on first use *within that node*. (An API is simply an agreed way for two programs to talk.) Terms already defined in an earlier chain node may be reused bare in later ones — the tour reads in chain order.
 
 **The mom test — this rule outranks style.** Before emitting any sentence, ask: *would a smart adult with zero tech exposure understand it on first read?* If not, rewrite. Field-tested failures to avoid (real user feedback, 2026-07-13):
 
 - Never coin insider nouns when an everyday phrase exists. "并行子代理" → "几个 AI 帮手同时干活" / "several AI helpers working at once". "模块简报" → "分工单" / "work sheet". "序列化 / 实例化 / 编排" and their English cousins ("orchestration", "instantiate") are banned outright.
+- Keep names like "Fetch Layer" only when they are the actual part name. Do not let them drag in extra jargon. Good: "The Fetch Layer goes to each ad platform and brings back raw numbers." Bad: "The Fetch Layer implements a unified adaptor interface for external data ingestion."
+- Replace vague engineering nouns with visible actions:
+  - "接口 / interface" → "the same shape of request" or "the same way to ask for data"
+  - "适配器 / adaptor" → "one small connector for each platform"
+  - "限流 / rate limiting" → "slows calls down so the platform does not block you"
+  - "去重 / dedup" → "keeps the same record from being counted twice"
+  - "编排 / orchestration" → "decides who does what next"
+  - "聚合查询 / aggregate query" → "adds many rows into one chart number"
+  - "持久化 / persistence" → "saves it so it is still there later"
+  - "上游/下游 / upstream/downstream" → "the part before this / the part waiting for this"
 - Node `name`s are the worst place for jargon — they're the first thing seen on the canvas. Name parts the way the owner would point at them on a whiteboard.
-- If a technical word must stay (Redis, cron, API), keep it, define it in parentheses, and make the *rest* of the sentence carry the meaning — the reader should get the point even if they skip the term.
+- If a technical word must stay (Redis, cron, API, Fetch Layer), keep it, define it in parentheses when needed, and make the *rest* of the sentence carry the meaning — the reader should get the point even if they skip the term.
 - Prefer verbs over nouns: "把各章拼成一个网页" beats "执行组装流程".
 
 **`how`**: ≤3 sentences, mechanism explained in plain words, jargon rule applies. **`fail`**: exactly the one sentence the owner needs — what visibly happens when this part breaks, and whether it cascades. Users assume code either works or explodes; knowing there's a plan for failure is how they stay confident.
@@ -70,7 +82,9 @@ From the skill, verbatim — this is the bar:
 **`grade` gates content** — grade measures *product consequence*, not code complexity:
 - `trivial`: role + how only (impact `[]`, fail `""`, tradeoff null)
 - `routine`: adds impact + fail
-- `consequential`: adds the tradeoff block — required. A part is consequential when a real choice was made: architecture, storage, external services, anything expensive to reverse or with ongoing cost. From the skill: *"any case where two experienced engineers could reasonably recommend different approaches."*
+- `consequential`: adds the tradeoff block — required. A part is consequential **only when a real system-design choice was made**: architecture, storage, external services, build strategy — anything expensive to reverse or with ongoing cost. From the skill: *"any case where two experienced engineers could reasonably recommend different approaches."*
+
+  **System design only (user rule, 2026-07-13).** Workflow habits, content conventions, or rules an author merely wrote down in a doc do NOT earn a tradeoff — even if they were deliberate decisions. Litmus: *would two engineers argue about how to build it?* → tradeoff. *Would two product people argue about how it should feel to use?* → no tradeoff; mention the decision in `impact` or `how` instead. A part implemented as a Markdown file gets a tradeoff only if that file decides how the system is built or runs (e.g. parallel vs sequential production), never just because "it's the spec".
 
 **`tradeoff`**: `a` = what was chosen, `b` = the serious alternative, `cost` = what the owner pays for the choice, `when` = the concrete signal that means it's time to switch ("when rows pass 100M, move to BigQuery"). `when` is an action trigger, not a vague "if you scale".
 
