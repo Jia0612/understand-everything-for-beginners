@@ -4,7 +4,7 @@ export type Lane = 'fe' | 'be' | 'db';
 export type Grade = 'trivial' | 'routine' | 'consequential';
 export type Lang = 'en' | 'zh';
 
-export interface CodeBlock { c: string; n: Content; risk?: Content | null }
+export interface CodeBlock { c: string; n: Content; risk?: Content | null; lines?: (Content | '')[] | null }
 export interface Tradeoff { a: Content; b: Content; cost: Content; when: Content }
 
 export interface MapNode {

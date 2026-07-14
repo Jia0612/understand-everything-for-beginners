@@ -25,6 +25,17 @@ const codeBlockSchema = z.object({
   c: nonEmpty,                                // 真实代码行,不分语言
   n: content,                                 // 每块一条大白话注解
   risk: content.nullable().optional(),        // 只有碰外部 API/写存储/难回退的行才有
+  lines: z.array(contentOrEmpty).nullable().optional(),  // 逐行费曼翻译;行数与 c 一致(superRefine 查)
+}).superRefine((b, ctx) => {
+  if (b.lines != null) {
+    const lineCount = String(b.c ?? '').split('\n').length;
+    if (b.lines.length !== lineCount) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom, path: ['lines'],
+        message: `must have exactly one entry per code line (${lineCount}), got ${b.lines.length}`,
+      });
+    }
+  }
 });
 
 const tradeoffSchema = z.object({

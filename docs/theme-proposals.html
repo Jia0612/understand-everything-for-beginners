@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Understand Everything · 配色字体提案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito+Sans:wght@400;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:#18181b;color:#e4e4e7;padding:36px 4vw 80px}
+  h1{font-size:26px;font-weight:600;margin-bottom:6px}
+  .sub{color:#a1a1aa;font-size:14px;line-height:1.7;max-width:760px;margin-bottom:30px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:22px}
+  .card{border-radius:16px;overflow:hidden;border:1px solid #3f3f46}
+  .card .body{padding:22px}
+  .tagline{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.7;margin-bottom:6px}
+  .card h2{font-size:22px;margin-bottom:12px}
+  .swatches{display:flex;gap:6px;margin:14px 0}
+  .sw{flex:1;height:34px;border-radius:7px;border:1px solid rgba(128,128,128,.25);position:relative}
+  .sw span{position:absolute;bottom:-18px;left:0;font-size:9px;font-family:JetBrains Mono,monospace;opacity:.65}
+  .mock{border-radius:12px;padding:14px;margin:26px 0 14px}
+  .mock .mnode{display:inline-block;border-radius:10px;padding:9px 12px;margin-bottom:12px}
+  .mock .mname{font-size:13.5px;font-weight:600}
+  .mock .mtool{font-family:JetBrains Mono,monospace;font-size:10px;border-radius:5px;padding:2px 6px;display:inline-block;margin-top:5px}
+  .mock .mrole{font-size:12.5px;line-height:1.6;padding-left:10px;margin-top:4px}
+  .mock .mcode{font-family:JetBrains Mono,monospace;font-size:11px;border-radius:7px;padding:8px 10px;margin-top:10px}
+  .mock .mtrans{font-size:11px;padding:3px 10px 0;opacity:.85}
+  .laws{font-size:12.5px;line-height:1.75;margin-top:14px}
+  .laws b{display:block;margin-bottom:2px}
+  .laws li{margin:0 0 8px 16px}
+  .verdict{font-size:12.5px;line-height:1.6;margin-top:12px;padding:10px 12px;border-radius:8px;background:rgba(128,128,128,.1)}
+</style>
+</head>
+<body>
+<h1>配色 + 字体:三套候选方案</h1>
+<p class="sub">依据 Laws of UX 里最相关的四条:<b>美即好用效应</b>(顺眼的界面被感知为更好用)、<b>冯·雷斯托夫效应</b>(要突出的东西必须是全场唯一亮色——我们的「取舍」「变了」标签)、<b>雅各布定律</b>(用户期待和他们熟悉的产品长得像)、以及 <b>WCAG 对比度</b>(正文对比至少 4.5:1,零基础用户读长文不费眼)。每套下面有真实组件的迷你样张。</p>
+
+<div class="grid">
+
+  <!-- A 现状 -->
+  <div class="card" style="background:#111">
+    <div class="body" style="color:#f5f0eb">
+      <div class="tagline" style="color:#d4a574">方案 A · 现状</div>
+      <h2 style="font-family:'DM Serif Display',serif;font-weight:400">暖金深夜 <span style="color:#d4a574">Gallery Dark</span></h2>
+      <div style="font-size:12px;opacity:.7">DM Serif Display + Inter + JetBrains Mono</div>
+      <div class="swatches">
+        <div class="sw" style="background:#0a0a0a"><span>#0a0a0a</span></div>
+        <div class="sw" style="background:#d4a574"><span>#d4a574</span></div>
+        <div class="sw" style="background:#7ba4c9"><span>fe</span></div>
+        <div class="sw" style="background:#5a9e6f"><span>be</span></div>
+        <div class="sw" style="background:#c9a06c"><span>db</span></div>
+      </div>
+      <div class="mock" style="background:#0a0a0a;border:1px solid rgba(212,165,116,.15)">
+        <div class="mnode" style="background:#141414;border:1px solid rgba(212,165,116,.25)">
+          <span class="mname">现成零件仓库</span> <span style="font-size:9px;color:#d4a574;border:1px solid rgba(212,165,116,.4);border-radius:4px;padding:1px 5px">取舍</span><br/>
+          <span class="mtool" style="background:#1a1a1a;color:#a39787">references/</span>
+        </div>
+        <div class="mrole" style="border-left:2px solid #d4a574;color:#f5f0eb">存放每门课都直接取用的现成零件。</div>
+        <div class="mcode" style="background:#0d0d0d;color:#cfc6ba;border:1px solid rgba(212,165,116,.15)">cat _base.html modules/*.html &gt; index.html</div>
+        <div class="mtrans" style="color:#e8c49a">拼接本体:骨架 + 各章,首尾相接。</div>
+      </div>
+      <ul class="laws" style="color:#a39787">
+        <li><b style="color:#f5f0eb">冯·雷斯托夫 ✓</b>金色是全场唯一暖亮色,「取舍」标签一眼跳出。</li>
+        <li><b style="color:#f5f0eb">美即好用 ✓</b>画廊式的高级感,demo 观感强。</li>
+        <li><b style="color:#f5f0eb">雅各布定律 ✗</b>零基础用户日常看的是 Notion/微信这类浅色产品,深黑金更像开发者工具。</li>
+        <li><b style="color:#f5f0eb">对比度 △</b>正文 #f5f0eb 够,但次要文字 #6b5f53 只有 3.1:1,长读吃力。</li>
+      </ul>
+      <div class="verdict">优点:有辨识度、衬托代码。风险:对目标用户(非技术人)偏"极客感"。</div>
+    </div>
+  </div>
+
+  <!-- B 纸上蓝图 -->
+  <div class="card" style="background:#faf6ef">
+    <div class="body" style="color:#292524">
+      <div class="tagline" style="color:#2a6f97">方案 B · 推荐</div>
+      <h2 style="font-family:Fraunces,serif;font-weight:700">纸上蓝图 <span style="color:#2a6f97">Paper Blueprint</span></h2>
+      <div style="font-size:12px;color:#78716c">Fraunces + Nunito Sans + JetBrains Mono</div>
+      <div class="swatches">
+        <div class="sw" style="background:#faf6ef"><span>#faf6ef</span></div>
+        <div class="sw" style="background:#2a6f97"><span>#2a6f97</span></div>
+        <div class="sw" style="background:#4a90b8"><span>fe</span></div>
+        <div class="sw" style="background:#3d8b60"><span>be</span></div>
+        <div class="sw" style="background:#b07d3f"><span>db</span></div>
+      </div>
+      <div class="mock" style="background:#fffdf8;border:1px solid #e7ddcc;font-family:'Nunito Sans',sans-serif">
+        <div class="mnode" style="background:#fff;border:1.5px solid #d6cbb8;box-shadow:0 2px 6px rgba(90,70,40,.08)">
+          <span class="mname" style="color:#292524">现成零件仓库</span> <span style="font-size:9px;color:#2a6f97;border:1px solid #9cc0d4;border-radius:4px;padding:1px 5px;background:#eef5f9">取舍</span><br/>
+          <span class="mtool" style="background:#f3ede1;color:#78716c">references/</span>
+        </div>
+        <div class="mrole" style="border-left:2px solid #2a6f97;color:#292524">存放每门课都直接取用的现成零件。</div>
+        <div class="mcode" style="background:#1e293b;color:#d8e2ec">cat _base.html modules/*.html &gt; index.html</div>
+        <div class="mtrans" style="color:#2a6f97">拼接本体:骨架 + 各章,首尾相接。</div>
+      </div>
+      <ul class="laws" style="color:#57534e">
+        <li><b style="color:#292524">雅各布定律 ✓</b>暖纸底 + 深蓝重点,和 Notion/教科书/笔记类产品同一语系,零基础用户零适应成本。</li>
+        <li><b style="color:#292524">对比度 ✓</b>正文 #292524 对 #faf6ef 约 13:1,次要文字也 ≥4.6:1,长读不费眼。</li>
+        <li><b style="color:#292524">冯·雷斯托夫 ✓</b>页面全暖色,唯一的冷色深蓝专门留给「取舍/变了」等要点。</li>
+        <li><b style="color:#292524">美即好用 ✓</b>Fraunces 标题有书卷气,"学东西"的心理暗示比"盯监控大屏"更对味。</li>
+      </ul>
+      <div class="verdict" style="background:#f3ede1">优点:最贴合"给小白讲清楚"的产品性格;代码块保留深底,金句依旧醒目。代价:失去现在的"深夜画廊"辨识度。</div>
+    </div>
+  </div>
+
+  <!-- C 墨蓝珊瑚 -->
+  <div class="card" style="background:#0f172a">
+    <div class="body" style="color:#e2e8f0">
+      <div class="tagline" style="color:#f59e78">方案 C</div>
+      <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700">墨蓝珊瑚 <span style="color:#f59e78">Ink &amp; Coral</span></h2>
+      <div style="font-size:12px;color:#94a3b8">Bricolage Grotesque + DM Sans + JetBrains Mono</div>
+      <div class="swatches">
+        <div class="sw" style="background:#0f172a"><span>#0f172a</span></div>
+        <div class="sw" style="background:#f59e78"><span>#f59e78</span></div>
+        <div class="sw" style="background:#7dd3fc"><span>fe</span></div>
+        <div class="sw" style="background:#86efac"><span>be</span></div>
+        <div class="sw" style="background:#fcd34d"><span>db</span></div>
+      </div>
+      <div class="mock" style="background:#0b1120;border:1px solid #1e293b;font-family:'DM Sans',sans-serif">
+        <div class="mnode" style="background:#1e293b;border:1px solid #334155">
+          <span class="mname" style="color:#f1f5f9">现成零件仓库</span> <span style="font-size:9px;color:#f59e78;border:1px solid rgba(245,158,120,.5);border-radius:4px;padding:1px 5px">取舍</span><br/>
+          <span class="mtool" style="background:#0f172a;color:#94a3b8">references/</span>
+        </div>
+        <div class="mrole" style="border-left:2px solid #f59e78;color:#e2e8f0">存放每门课都直接取用的现成零件。</div>
+        <div class="mcode" style="background:#020617;color:#cbd5e1">cat _base.html modules/*.html &gt; index.html</div>
+        <div class="mtrans" style="color:#f8b893">拼接本体:骨架 + 各章,首尾相接。</div>
+      </div>
+      <ul class="laws" style="color:#94a3b8">
+        <li><b style="color:#e2e8f0">美即好用 ✓</b>更现代、更"产品感",Bricolage 标题活泼不严肃。</li>
+        <li><b style="color:#e2e8f0">对比度 ✓</b>正文 #e2e8f0 对 #0f172a 约 12:1;泳道三色在深蓝底上比现状更鲜明。</li>
+        <li><b style="color:#e2e8f0">冯·雷斯托夫 ✓</b>珊瑚橙是唯一暖色,重点必然跳出。</li>
+        <li><b style="color:#e2e8f0">雅各布定律 △</b>仍是深色系,但蓝底比纯黑底更接近常见产品(Slack 深色、Linear)。</li>
+      </ul>
+      <div class="verdict" style="background:#1e293b">优点:保留深色气质但更年轻;三条泳道颜色分得最开。风险:和"学习/讲解"的调性关联最弱。</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

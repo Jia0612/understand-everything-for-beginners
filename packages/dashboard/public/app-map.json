@@ -421,7 +421,21 @@
             "en": "The entire truth of assembly: three parts joined end to end, one web page out.",
             "zh": "拼装的全部真相:三部分首尾相接,出来一个网页文件。"
           },
-          "risk": null
+          "risk": null,
+          "lines": [
+            {
+              "en": "Safety switch: if any step fails, stop right there instead of shipping a half-built page.",
+              "zh": "保险开关:任何一步出错就立刻停,不带着半成品继续。"
+            },
+            {
+              "en": "The glue line: page frame + every chapter + footer, joined end to end into index.html.",
+              "zh": "拼接本体:骨架 + 各章 + 页脚,首尾相接写进 index.html。"
+            },
+            {
+              "en": "Prints a friendly \"done, open it in your browser\".",
+              "zh": "打印一句「拼好了,去浏览器打开」。"
+            }
+          ]
         }
       ],
       "tradeoff": null,
@@ -471,7 +485,21 @@
             "en": "The finished page hooks up just three things: a title, the local styling, the local engine — the last two live in the same folder.",
             "zh": "成品页面只挂三样东西:标题、本地样式、本地互动引擎——后两样就躺在同一个文件夹里。"
           },
-          "risk": null
+          "risk": null,
+          "lines": [
+            {
+              "en": "The tab title of the course page.",
+              "zh": "课程页面的标签页标题。"
+            },
+            {
+              "en": "Pulls in the local stylesheet — the course looks right even offline.",
+              "zh": "接上本地样式表——断网也不影响长相。"
+            },
+            {
+              "en": "Pulls in the local interaction engine: quizzes, progress dots, animations.",
+              "zh": "接上本地互动引擎:测验、进度点、动画都靠它。"
+            }
+          ]
         }
       ],
       "tradeoff": null,

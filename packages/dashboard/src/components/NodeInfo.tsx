@@ -99,7 +99,19 @@ function NodeDetail({ id, node }: { id: string; node: MapNode }) {
           <div className="code-body">
             {node.code.map((b, i) => (
               <div className="cblock" key={i}>
-                <pre>{b.c}</pre>
+                {b.lines?.length ? (
+                  // 逐行费曼翻译:一行代码、一行人话,交替排
+                  <div className="code-lines">
+                    {b.c.split('\n').map((codeLine, j) => (
+                      <div className="code-line" key={j}>
+                        <pre>{codeLine || ' '}</pre>
+                        {b.lines![j] ? <div className="line-note">{L(b.lines![j], lang)}</div> : null}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <pre>{b.c}</pre>
+                )}
                 <div className="note">{L(b.n, lang)}</div>
                 {b.risk ? <div className="risk">{L(b.risk, lang)}</div> : null}
               </div>

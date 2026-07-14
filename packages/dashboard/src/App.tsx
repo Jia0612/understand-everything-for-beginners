@@ -1,6 +1,6 @@
 // 组装:顶栏 + 全幅画布 + 350px 右面板(UI 三件套,永不加第四个区域)+ 开场弹窗。
 // 启动时尝试加载 ./app-map.json:过校验就作为「已加载的项目」,否则退回示例并说明原因。
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useStore } from './store';
 import { chooseData } from './lib/chooseData.mjs';
 import { Header } from './components/Header';
@@ -11,6 +11,21 @@ import { OnboardingModal } from './components/OnboardingModal';
 
 export default function App() {
   const { intro, setExternal, escape } = useStore();
+
+  // 右侧面板宽度可拖(280–640px);抓住把手横向拖动即可
+  const [panelW, setPanelW] = useState(350);
+  const [dragging, setDragging] = useState(false);
+  const dragRef = useRef(false);
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      if (!dragRef.current) return;
+      setPanelW(Math.min(640, Math.max(280, window.innerWidth - e.clientX)));
+    };
+    const onUp = () => { dragRef.current = false; setDragging(false); };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    return () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -37,7 +52,11 @@ export default function App() {
       <Header />
       <div className="main">
         <GraphView />
-        <aside>
+        <div
+          className={`panel-resizer ${dragging ? 'dragging' : ''}`}
+          onPointerDown={() => { dragRef.current = true; setDragging(true); }}
+        />
+        <aside style={{ width: panelW }}>
           <TourBar />
           <NodeInfo />
         </aside>

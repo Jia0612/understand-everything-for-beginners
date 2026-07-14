@@ -19,8 +19,7 @@ export interface Strings {
   hl: string; unhl: string; tag: string;
   diffChanged: string; diffAffected: string; legChanged: string; legAffected: string;
   sumHint: string;
-  mTitle: string; mSub: string; mLang: string; mRepo: string; mNote: string;
-  analyze: string; demo: string; openLoaded: string; analyzeStub: string;
+  mTitle: string; mLang: string; start: string;
   rejected: string;
 }
 
@@ -47,12 +46,7 @@ export const STR: Record<Lang, Strings> = {
     legAffected: '<i style="background:var(--diff-affected)"></i>Downstream of a change',
     sumHint: 'Start with why this project exists — then walk the pipeline.',
     mTitle: 'Understand <em>Everything</em>',
-    mSub: 'See what your vibe-coded app is made of — every part explained in plain language: what it does, why it was chosen, and what it costs you.',
-    mLang: 'Language', mRepo: 'GitHub repo (optional)',
-    mNote: 'Analysis runs in your AI coding agent, not in this page.',
-    analyze: 'Analyze this repo', demo: 'Explore the demo project',
-    openLoaded: 'Open the loaded project',
-    analyzeStub: 'To analyze a repo, run /explain-my-app in your AI agent (Claude Code or Codex), then reload this page.',
+    mLang: 'Language', start: 'Start exploring',
     rejected: 'The loaded app-map.json failed validation, showing the demo instead:',
   },
   zh: {
@@ -77,12 +71,7 @@ export const STR: Record<Lang, Strings> = {
     legAffected: '<i style="background:var(--diff-affected)"></i>在变化下游、可能被波及的',
     sumHint: '先看这个项目为什么存在——再沿管道走一遍。',
     mTitle: '看懂<em>一切</em>',
-    mSub: '看清你 vibe code 出来的 App 是由什么组成的——每个零件用人话解释：它干什么、为什么选它、代价是什么。',
-    mLang: '语言', mRepo: 'GitHub 仓库（可选）',
-    mNote: '分析在你的 AI 编程工具里进行,不在本页面。',
-    analyze: '分析这个仓库', demo: '先看示例项目',
-    openLoaded: '打开已加载的项目',
-    analyzeStub: '想分析仓库:在你的 AI 工具(Claude Code 或 Codex)里运行 /explain-my-app,完成后刷新本页。',
+    mLang: '语言', start: '开始探索',
     rejected: '检测到的 app-map.json 没通过校验,先展示示例项目。原因:',
   },
 };

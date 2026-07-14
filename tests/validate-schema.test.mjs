@@ -139,3 +139,24 @@ test('双语值某种语言是空字符串也要报错(空的等于没写)', () 
   const r = validateAppMap(m);
   assert.ok(r.errors.some(e => e.includes('scheduler') && e.includes('how')));
 });
+
+// ---- 2026-07-13 用户反馈:核心代码要逐行费曼翻译 ----
+
+test('代码块可以带逐行翻译(lines),行数必须和代码行数一一对应', () => {
+  const m = good();
+  const block = m.nodes.scheduler.code[0]; // 4 行 serverless.yml
+  const n = block.c.split('\n').length;
+  block.lines = Array.from({ length: n }, (_, i) => `第 ${i + 1} 行的人话解释`);
+  assert.equal(validateAppMap(m).valid, true, JSON.stringify(validateAppMap(m).errors));
+  block.lines = ['只有一行'];  // 行数对不上
+  assert.ok(validateAppMap(m).errors.some(e => e.includes('scheduler') && e.includes('lines')));
+});
+
+test('逐行翻译支持双语对,允许个别行留空(没什么好说的行)', () => {
+  const m = good();
+  const block = m.nodes.scheduler.code[0];
+  const n = block.c.split('\n').length;
+  block.lines = Array.from({ length: n }, () => ({ en: 'plain', zh: '人话' }));
+  block.lines[n - 1] = '';
+  assert.equal(validateAppMap(m).valid, true, JSON.stringify(validateAppMap(m).errors));
+});

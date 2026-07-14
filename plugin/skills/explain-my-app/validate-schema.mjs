@@ -146,6 +146,15 @@ export function validateAppMap(m) {
             if (b.risk !== null && b.risk !== undefined && !isContent(b.risk)) {
               err(`${p}.code[${i}].risk`, `must be null, or ${CONTENT_MSG}`);
             }
+            // 逐行费曼翻译:行数必须和代码行数一致;个别行可留空
+            if (b.lines !== undefined && b.lines !== null) {
+              const lineCount = String(b.c ?? '').split('\n').length;
+              if (!Array.isArray(b.lines) || b.lines.length !== lineCount) {
+                err(`${p}.code[${i}].lines`, `must have exactly one entry per code line (${lineCount}), got ${Array.isArray(b.lines) ? b.lines.length : typeof b.lines}`);
+              } else if (!b.lines.every((l) => isContentOrEmpty(l))) {
+                err(`${p}.code[${i}].lines`, `every entry ${CONTENT_MSG}, or empty`);
+              }
+            }
           });
         }
       }
