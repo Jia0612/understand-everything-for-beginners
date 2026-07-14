@@ -17,6 +17,10 @@ You are producing `app-map.json` — a 5–15 part plain-language map of the
 current project, for an owner who cannot read code. `<REPO>` below is the
 directory where understand-everything is installed.
 
+If the user gives a GitHub URL instead of a local project, shallow-clone it
+first (`git clone --depth 1 <url> /tmp/ue-<repo-name>`) and run every step
+inside that clone — any public repo works.
+
 1. **Scan** (deterministic script, no AI):
    ```
    node <REPO>/plugin/skills/explain-my-app/scan-project.mjs . .ue/scan-result.json

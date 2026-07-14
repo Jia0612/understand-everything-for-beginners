@@ -11,6 +11,12 @@ Base directory of this skill: referred to as `$SKILL` below.
 
 ## Pipeline
 
+0. **Resolve the target**: default is the current project directory. If the user gives a GitHub URL (or `owner/repo`), clone it first — shallow, read-only — and analyze the clone:
+   ```
+   git clone --depth 1 <url> /tmp/ue-<repo-name>
+   ```
+   All later steps run inside that directory (`.ue/` outputs live there too). Anyone's public repo works, not just the user's own.
+
 1. **Scan** (deterministic, no LLM):
    ```
    node $SKILL/scan-project.mjs <projectRoot> .ue/scan-result.json

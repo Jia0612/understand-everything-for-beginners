@@ -1,0 +1,339 @@
+{
+  "scriptCompleted": true,
+  "projectName": "understand-everything",
+  "readme": {
+    "path": "README.md",
+    "head": "# Understand Everything\n\nTurn any vibe-coded project into an interactive plain-language diagram. Every part of the app, organized as **Frontend / Backend / Database**, explained in words the owner can repeat to a friend: what it does, why it was chosen, what the tradeoff was — bilingual (English / 中文), switchable instantly.\n\nNo API keys, no hosted service: the analysis runs inside the AI coding agent you already use; the dashboard runs locally in your browser.\n\n## Install\n\n### Claude Code\n\n```\n/plugin marketplace add Jia0612/understand-everything-for-beginners\n/plugin install understand-everything\n```\n\nThen, inside any project: `/explain-my-app` — it scans the project, writes the plain-language map to `.ue/app-map.json`, validates it, and opens the dashboard.\n\n### OpenAI Codex / Gemini CLI / OpenCode\n\n```bash\ncurl -fsSL https://raw.githubusercontent.com/Jia0612/understand-everything-for-beginners/main/install.sh | bash -s codex\n```\n\nRestart your CLI, then invoke with `$explain-my-app` (Codex uses `$` instead of `/`), or just ask: \"use the explain-my-app skill\".\n\n### VS Code + GitHub Copilot\n\nAuto-discovered via `.copilot-plugin/plugin.json` when this repo is cloned and opened. For personal (all-projects) install: `./install.sh vscode`.\n\n### View an existing map\n\nIn any project that already has `.ue/app-map.json`:\n\n```bash\nnpx understand-everything\n```\n\n## 中文速览\n\n把 vibe code 出来的项目变成一张能点的「人话地图」:每个零件讲清它干什么、为什么选它、代价是什么、什么时候该换。分析由你已在用的 AI 编程工具完成,不烧额外 API。装好后在项目里说一句 `/explain-my-app`(Codex 里是 `$explain-my-app`)即可。\n\n## Repo layout\n\n- `plugin/` — the skill: deterministic scanner, generation ruleset, schema gate\n- `packages/core` — the app-map.json contract (zod)\n- `packages/dashboard` — the local dashboard (React + Vite)\n- `cli/` — `npx understand-everything`, a zero-config local server\n- `adapters/` — notes for non-Claude agents\n- `docs/` — approved prototype + example maps\n\nSkeleton and multi-platform packaging follow [Understand-Anything](https://github.com/Egonex-AI/Understand-Anything) (MIT). License: MIT.\n"
+  },
+  "stack": [
+    {
+      "tool": "React",
+      "lane": "fe",
+      "evidence": "packages/dashboard/package.json dependencies.react"
+    },
+    {
+      "tool": "Tailwind CSS",
+      "lane": "fe",
+      "evidence": "packages/dashboard/package.json dependencies.tailwindcss"
+    },
+    {
+      "tool": "Vite",
+      "lane": "fe",
+      "evidence": "packages/dashboard/package.json dependencies.vite"
+    }
+  ],
+  "candidateFiles": [
+    {
+      "path": "README.md",
+      "reason": "readme",
+      "sizeLines": 51
+    },
+    {
+      "path": "cli/package.json",
+      "reason": "manifest",
+      "sizeLines": 11
+    },
+    {
+      "path": "package.json",
+      "reason": "manifest",
+      "sizeLines": 11
+    },
+    {
+      "path": "packages/dashboard/vite.config.ts",
+      "reason": "config",
+      "sizeLines": 8
+    }
+  ],
+  "envFiles": [],
+  "files": [
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "language": "json",
+      "sizeLines": 15
+    },
+    {
+      "path": ".claude/launch.json",
+      "language": "json",
+      "sizeLines": 11
+    },
+    {
+      "path": ".claude/settings.json",
+      "language": "json",
+      "sizeLines": 6
+    },
+    {
+      "path": ".copilot-plugin/plugin.json",
+      "language": "json",
+      "sizeLines": 11
+    },
+    {
+      "path": ".gitignore",
+      "language": "unknown",
+      "sizeLines": 3
+    },
+    {
+      "path": "adapters/codex/explain-my-app.md",
+      "language": "markdown",
+      "sizeLines": 56
+    },
+    {
+      "path": "BUILD-SPEC.md",
+      "language": "markdown",
+      "sizeLines": 163
+    },
+    {
+      "path": "cli/bin.mjs",
+      "language": "javascript",
+      "sizeLines": 53
+    },
+    {
+      "path": "cli/package.json",
+      "language": "json",
+      "sizeLines": 11
+    },
+    {
+      "path": "cli/server.mjs",
+      "language": "javascript",
+      "sizeLines": 63
+    },
+    {
+      "path": "docs/app-map.example.json",
+      "language": "json",
+      "sizeLines": 223
+    },
+    {
+      "path": "docs/app-map.m1-codebase-to-course.json",
+      "language": "json",
+      "sizeLines": 488
+    },
+    {
+      "path": "docs/prototype.html",
+      "language": "html",
+      "sizeLines": 1075
+    },
+    {
+      "path": "feynman-explainer SKILL.md",
+      "language": "markdown",
+      "sizeLines": 109
+    },
+    {
+      "path": "install.sh",
+      "language": "shell",
+      "sizeLines": 90
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "sizeLines": 11
+    },
+    {
+      "path": "packages/core/package.json",
+      "language": "json",
+      "sizeLines": 13
+    },
+    {
+      "path": "packages/core/src/index.js",
+      "language": "javascript",
+      "sizeLines": 153
+    },
+    {
+      "path": "packages/dashboard/index.html",
+      "language": "html",
+      "sizeLines": 15
+    },
+    {
+      "path": "packages/dashboard/package.json",
+      "language": "json",
+      "sizeLines": 26
+    },
+    {
+      "path": "packages/dashboard/public/app-map.json",
+      "language": "json",
+      "sizeLines": 488
+    },
+    {
+      "path": "packages/dashboard/src/App.tsx",
+      "language": "typescript",
+      "sizeLines": 47
+    },
+    {
+      "path": "packages/dashboard/src/components/GraphView.tsx",
+      "language": "typescript",
+      "sizeLines": 99
+    },
+    {
+      "path": "packages/dashboard/src/components/Header.tsx",
+      "language": "typescript",
+      "sizeLines": 28
+    },
+    {
+      "path": "packages/dashboard/src/components/NodeInfo.tsx",
+      "language": "typescript",
+      "sizeLines": 155
+    },
+    {
+      "path": "packages/dashboard/src/components/OnboardingModal.tsx",
+      "language": "typescript",
+      "sizeLines": 38
+    },
+    {
+      "path": "packages/dashboard/src/components/TourBar.tsx",
+      "language": "typescript",
+      "sizeLines": 24
+    },
+    {
+      "path": "packages/dashboard/src/i18n.ts",
+      "language": "typescript",
+      "sizeLines": 88
+    },
+    {
+      "path": "packages/dashboard/src/index.css",
+      "language": "css",
+      "sizeLines": 2
+    },
+    {
+      "path": "packages/dashboard/src/lib/bilingual.mjs",
+      "language": "javascript",
+      "sizeLines": 12
+    },
+    {
+      "path": "packages/dashboard/src/lib/chooseData.mjs",
+      "language": "javascript",
+      "sizeLines": 18
+    },
+    {
+      "path": "packages/dashboard/src/lib/layout.mjs",
+      "language": "javascript",
+      "sizeLines": 30
+    },
+    {
+      "path": "packages/dashboard/src/main.tsx",
+      "language": "typescript",
+      "sizeLines": 10
+    },
+    {
+      "path": "packages/dashboard/src/store.ts",
+      "language": "typescript",
+      "sizeLines": 88
+    },
+    {
+      "path": "packages/dashboard/src/tokens.css",
+      "language": "css",
+      "sizeLines": 166
+    },
+    {
+      "path": "packages/dashboard/src/types.ts",
+      "language": "typescript",
+      "sizeLines": 33
+    },
+    {
+      "path": "packages/dashboard/tsconfig.json",
+      "language": "json",
+      "sizeLines": 16
+    },
+    {
+      "path": "packages/dashboard/vite.config.ts",
+      "language": "typescript",
+      "sizeLines": 8
+    },
+    {
+      "path": "plugin/.claude-plugin/plugin.json",
+      "language": "json",
+      "sizeLines": 18
+    },
+    {
+      "path": "plugin/skills/explain-my-app/diff-app-map.mjs",
+      "language": "javascript",
+      "sizeLines": 83
+    },
+    {
+      "path": "plugin/skills/explain-my-app/generate-prompt.md",
+      "language": "markdown",
+      "sizeLines": 117
+    },
+    {
+      "path": "plugin/skills/explain-my-app/scan-project.mjs",
+      "language": "javascript",
+      "sizeLines": 425
+    },
+    {
+      "path": "plugin/skills/explain-my-app/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 49
+    },
+    {
+      "path": "plugin/skills/explain-my-app/validate-schema.mjs",
+      "language": "javascript",
+      "sizeLines": 200
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "sizeLines": 51
+    },
+    {
+      "path": "scripts/paste-into-prototype.mjs",
+      "language": "javascript",
+      "sizeLines": 35
+    },
+    {
+      "path": "tests/cli-server.test.mjs",
+      "language": "javascript",
+      "sizeLines": 80
+    },
+    {
+      "path": "tests/core-schema.test.mjs",
+      "language": "javascript",
+      "sizeLines": 75
+    },
+    {
+      "path": "tests/dashboard-lib.test.mjs",
+      "language": "javascript",
+      "sizeLines": 75
+    },
+    {
+      "path": "tests/diff-app-map.test.mjs",
+      "language": "javascript",
+      "sizeLines": 66
+    },
+    {
+      "path": "tests/install-script.test.mjs",
+      "language": "javascript",
+      "sizeLines": 51
+    },
+    {
+      "path": "tests/paste-into-prototype.test.mjs",
+      "language": "javascript",
+      "sizeLines": 54
+    },
+    {
+      "path": "tests/scan-project.test.mjs",
+      "language": "javascript",
+      "sizeLines": 144
+    },
+    {
+      "path": "tests/validate-schema.test.mjs",
+      "language": "javascript",
+      "sizeLines": 141
+    },
+    {
+      "path": "ua-vibe-prototype.html",
+      "language": "html",
+      "sizeLines": 671
+    }
+  ],
+  "totalFiles": 55,
+  "estimatedComplexity": "moderate",
+  "stats": {
+    "byLanguage": {
+      "json": 13,
+      "unknown": 1,
+      "markdown": 6,
+      "javascript": 18,
+      "html": 3,
+      "shell": 1,
+      "typescript": 11,
+      "css": 2
+    }
+  }
+}
