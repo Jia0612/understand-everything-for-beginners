@@ -1,0 +1,11 @@
+{
+  "name": "understand-everything",
+  "version": "0.1.0",
+  "description": "One command to open your project's plain-language map: npx understand-everything",
+  "type": "module",
+  "bin": {
+    "understand-everything": "./bin.mjs"
+  },
+  "files": ["bin.mjs", "server.mjs", "dist"],
+  "license": "MIT"
+}
