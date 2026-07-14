@@ -156,3 +156,11 @@ h2.pname{font-family:var(--font-serif);font-size:21px;font-weight:400;letter-spa
   #search{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* diff 高亮(色值沿用 UA):变了=红,被波及=琥珀。放在 .selected 规则之后会被选中态覆盖,故仅用左侧粗边+角标 */
+:root{ --diff-changed:#e05252; --diff-affected:#d4a030; }
+.node.diff-changed{border-left:3px solid var(--diff-changed)}
+.node.diff-affected{border-left:3px solid var(--diff-affected)}
+.diff-tag{font-size:9px;font-weight:600;letter-spacing:.06em;border-radius:4px;padding:1px 5px}
+.diff-tag.changed{color:var(--diff-changed);border:1px solid rgba(224,82,82,.4)}
+.diff-tag.affected{color:var(--diff-affected);border:1px solid rgba(212,160,48,.4)}

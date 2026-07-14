@@ -27,6 +27,12 @@ Base directory of this skill: referred to as `$SKILL` below.
    ```
    On failure: fix using the printed errors, regenerate **once**, validate again. On second failure: delete the broken file, report the errors to the user in plain language, stop. Never leave a broken app-map.json on disk.
 
+   Note for regeneration: BEFORE overwriting an existing `.ue/app-map.json` in step 3, copy it to `.ue/app-map.prev.json`. After validation passes, fill the diff (what changed / what sits downstream of a change — the dashboard shows them red / amber):
+   ```
+   node $SKILL/diff-app-map.mjs .ue/app-map.prev.json .ue/app-map.json
+   ```
+   First generation (no previous map): skip this — diff stays empty.
+
 5. **Show**: run the CLI from the project directory — it serves the dashboard and picks up `.ue/app-map.json` automatically, then opens the browser:
    ```
    npx understand-everything

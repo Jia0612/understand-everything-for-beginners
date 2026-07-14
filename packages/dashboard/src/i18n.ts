@@ -17,6 +17,7 @@ export interface Strings {
   code: (n: number) => string; codeTitle: string; noCode: string;
   trade: string; chose: string; over: string; cost: string; when: string;
   hl: string; unhl: string; tag: string;
+  diffChanged: string; diffAffected: string; legChanged: string; legAffected: string;
   sumHint: string;
   mTitle: string; mSub: string; mLang: string; mRepo: string; mNote: string;
   analyze: string; demo: string; openLoaded: string; analyzeStub: string;
@@ -41,6 +42,9 @@ export const STR: Record<Lang, Strings> = {
     code: (n) => `Core code (${n} lines)`, codeTitle: 'Core code', noCode: 'No code here — this part is configured, not written.',
     trade: 'The tradeoff', chose: 'Chose', over: 'over', cost: 'Cost: ', when: 'When to switch: ',
     hl: 'Highlight it in the flow', unhl: 'Clear highlight', tag: 'tradeoff',
+    diffChanged: 'changed', diffAffected: 'affected',
+    legChanged: '<i style="background:var(--diff-changed)"></i>Changed in the latest regeneration',
+    legAffected: '<i style="background:var(--diff-affected)"></i>Downstream of a change',
     sumHint: 'Start with why this project exists — then walk the pipeline.',
     mTitle: 'Understand <em>Everything</em>',
     mSub: 'See what your vibe-coded app is made of — every part explained in plain language: what it does, why it was chosen, and what it costs you.',
@@ -68,6 +72,9 @@ export const STR: Record<Lang, Strings> = {
     code: (n) => `核心代码（${n} 行）`, codeTitle: '核心代码', noCode: '这一块没有代码——它是配置出来的，不是写出来的。',
     trade: '当初的取舍', chose: '选了', over: '没选', cost: '代价：', when: '什么时候该换：',
     hl: '在流程里高亮它的上下游', unhl: '取消高亮', tag: '取舍',
+    diffChanged: '变了', diffAffected: '被波及',
+    legChanged: '<i style="background:var(--diff-changed)"></i>这次重新生成后变了的',
+    legAffected: '<i style="background:var(--diff-affected)"></i>在变化下游、可能被波及的',
     sumHint: '先看这个项目为什么存在——再沿管道走一遍。',
     mTitle: '看懂<em>一切</em>',
     mSub: '看清你 vibe code 出来的 App 是由什么组成的——每个零件用人话解释：它干什么、为什么选它、代价是什么。',

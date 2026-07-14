@@ -12,9 +12,14 @@ export function GraphView() {
   const selIdx = selected ? chain.indexOf(selected) : -1;
   const q = search.trim().toLowerCase();
 
+  const diffChanged = new Set(data.diff?.changed ?? []);
+  const diffAffected = new Set(data.diff?.affected ?? []);
+
   const nodeClass = (id: string, i: number) => {
     const n = data.nodes[id];
     const cls = ['node'];
+    if (diffChanged.has(id)) cls.push('diff-changed');
+    else if (diffAffected.has(id)) cls.push('diff-affected');
     if (id === selected) cls.push('selected');
     if (hlActive && selIdx >= 0) {
       if (i < selIdx) cls.push('up-hl');
@@ -73,16 +78,20 @@ export function GraphView() {
               <div className="node-head">
                 <span className="dot" style={{ background: `var(--lane-${n.lane})` }} />
                 <span className="node-name">{L(n.name, lang)}</span>
-                {n.tradeoff ? <span className="tag-tradeoff">{s.tag}</span> : null}
+                {diffChanged.has(id) ? <span className="diff-tag changed">{s.diffChanged}</span>
+                  : diffAffected.has(id) ? <span className="diff-tag affected">{s.diffAffected}</span>
+                  : n.tradeoff ? <span className="tag-tradeoff">{s.tag}</span> : null}
               </div>
               <span className="node-tool">{n.tool}</span>
             </button>
           );
         })}
 
-        <div className={`legend ${hlActive ? 'on' : ''}`}>
-          <span dangerouslySetInnerHTML={{ __html: s.legUp }} />
-          <span dangerouslySetInnerHTML={{ __html: s.legDn }} />
+        <div className={`legend ${hlActive || diffChanged.size ? 'on' : ''}`}>
+          {hlActive && <span dangerouslySetInnerHTML={{ __html: s.legUp }} />}
+          {hlActive && <span dangerouslySetInnerHTML={{ __html: s.legDn }} />}
+          {diffChanged.size > 0 && <span dangerouslySetInnerHTML={{ __html: s.legChanged }} />}
+          {diffChanged.size > 0 && <span dangerouslySetInnerHTML={{ __html: s.legAffected }} />}
         </div>
       </div>
     </div>
