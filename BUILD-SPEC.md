@@ -160,6 +160,8 @@ Web version with hosted analysis, accounts, Supabase persistence, languages beyo
 
 - **2026-07-13 (second review round)** §3: code blocks gain optional `lines` — per-line Feynman translations, one entry per code line, required for new generations (generate-prompt.md). §5: onboarding modal slimmed to title + language + one start button (GitHub field and demo/analyze buttons removed, user decision); right panel is drag-resizable 280–640px. §6: all component colors routed through CSS variables; theme candidates `paper` and `ink` selectable via ?theme= (docs/theme-proposals.html holds the rationale; default remains the original gold until the user picks).
 
+- **2026-07-13 (final)** §6 superseded: user picked palette F "Graphite Lime" (bg #121212, accent #a3e635, all-Inter type) as the DEFAULT dashboard theme. Original gold tokens remain available via ?theme=gold; paper/ink kept as candidates. All colors flow through the CSS variable tables in packages/dashboard/src/tokens.css.
+
 ## 11. Working style for this session
 
 Explain consequential choices before implementing (feynman-explainer applies). When a decision could reasonably go two ways, present the options with what the user gains and gives up, and let them pick. Keep every explanation shorter than the code it explains.

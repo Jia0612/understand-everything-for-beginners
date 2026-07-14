@@ -40,10 +40,13 @@ export default function App() {
     })();
   }, [setExternal]);
 
-  // 主题试穿:网址加 ?theme=paper 或 ?theme=ink 即可切换整套配色字体(定稿后改为默认值)
+  // 主题:默认碳灰青柠(用户 2026-07-13 定稿的方案 F)。
+  // 网址加 ?theme=gold / paper / ink 可切旧方案,便于对比或反悔。
   useEffect(() => {
     const t = new URLSearchParams(location.search).get('theme');
-    if (t === 'paper' || t === 'ink' || t === 'lime') document.documentElement.dataset.theme = t;
+    if (t === 'gold') delete document.documentElement.dataset.theme;
+    else if (t === 'paper' || t === 'ink') document.documentElement.dataset.theme = t;
+    else document.documentElement.dataset.theme = 'lime';
   }, []);
 
   useEffect(() => {
