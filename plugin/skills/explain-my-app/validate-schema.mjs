@@ -18,6 +18,14 @@ const CHAIN_MAX = 15;
 
 const isStr = (v) => typeof v === 'string';
 const isNonEmptyStr = (v) => typeof v === 'string' && v.trim().length > 0;
+// 双语值:{ en, zh } 两种语言都必须有、都不能为空(2026-07-13 用户拍板支持双语)
+const isBiPair = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
+  && isNonEmptyStr(v.en) && isNonEmptyStr(v.zh);
+// 内容值:一句话,要么单语言字符串,要么中英一对
+const isContent = (v) => isNonEmptyStr(v) || isBiPair(v);
+// 可留空的内容值:允许空字符串(宁缺勿编),但双语对一旦写了就必须两边齐
+const isContentOrEmpty = (v) => v === '' || isContent(v);
+const CONTENT_MSG = 'must be a non-empty string or a bilingual {en, zh} pair (both non-empty)';
 
 /**
  * 校验一个已解析的 app-map 对象。
@@ -33,17 +41,17 @@ export function validateAppMap(m) {
 
   // --- 顶层字段 ---
   if (m.version !== 1) err('version', `must be 1, got ${JSON.stringify(m.version)}`);
-  if (m.language !== 'en' && m.language !== 'zh') {
-    err('language', `must be "en" or "zh", got ${JSON.stringify(m.language)}`);
+  if (m.language !== 'en' && m.language !== 'zh' && m.language !== 'both') {
+    err('language', `must be "en", "zh" or "both", got ${JSON.stringify(m.language)}`);
   }
 
   if (!m.project || typeof m.project !== 'object') {
     err('project', 'missing or not an object');
   } else {
-    if (!isNonEmptyStr(m.project.name)) err('project.name', 'must be a non-empty string');
-    // scenario/pain 允许为空(宁缺勿编),但必须是字符串
+    if (!isContent(m.project.name)) err('project.name', CONTENT_MSG);
+    // scenario/pain 允许为空(宁缺勿编)
     for (const k of ['scenario', 'pain', 'now']) {
-      if (!isStr(m.project[k])) err(`project.${k}`, 'must be a string (may be empty)');
+      if (!isContentOrEmpty(m.project[k])) err(`project.${k}`, `${CONTENT_MSG}, or empty`);
     }
   }
 
@@ -78,12 +86,13 @@ export function validateAppMap(m) {
       if (!n || typeof n !== 'object') { err(p, 'must be an object'); continue; }
 
       if (!LANES.has(n.lane)) err(`${p}.lane`, `must be "fe" | "be" | "db", got ${JSON.stringify(n.lane)}`);
+      // tool 是技术名(React、PostgreSQL),两种语言写法一样,保持单字符串
       if (!isNonEmptyStr(n.tool)) err(`${p}.tool`, 'must be a non-empty string');
       if (!GRADES.has(n.grade)) err(`${p}.grade`, `must be "trivial" | "routine" | "consequential", got ${JSON.stringify(n.grade)}`);
-      if (!isNonEmptyStr(n.name)) err(`${p}.name`, 'must be a non-empty string');
-      if (!isNonEmptyStr(n.role)) err(`${p}.role`, 'must be a non-empty string');
-      if (!isNonEmptyStr(n.how)) err(`${p}.how`, 'must be a non-empty string');
-      if (!isStr(n.tourHint)) err(`${p}.tourHint`, 'must be a string');
+      if (!isContent(n.name)) err(`${p}.name`, CONTENT_MSG);
+      if (!isContent(n.role)) err(`${p}.role`, CONTENT_MSG);
+      if (!isContent(n.how)) err(`${p}.how`, CONTENT_MSG);
+      if (!isContentOrEmpty(n.tourHint)) err(`${p}.tourHint`, `${CONTENT_MSG}, or empty`);
 
       // needs/feeds 必须指向真实存在的节点
       for (const k of ['needs', 'feeds']) {
@@ -102,13 +111,13 @@ export function validateAppMap(m) {
         if (n.impact.length < 2 || n.impact.length > 3) {
           err(`${p}.impact`, `must have 2–3 items for ${n.grade} parts, got ${n.impact.length}`);
         }
-        if (!n.impact.every(isNonEmptyStr)) err(`${p}.impact`, 'every item must be a non-empty string');
+        if (!n.impact.every(isContent)) err(`${p}.impact`, `every item ${CONTENT_MSG}`);
       }
 
       if (n.grade === 'trivial') {
-        if (!isStr(n.fail ?? '')) err(`${p}.fail`, 'must be a string');
-      } else if (GRADES.has(n.grade) && !isNonEmptyStr(n.fail)) {
-        err(`${p}.fail`, `required for ${n.grade} parts`);
+        if (!isContentOrEmpty(n.fail ?? '')) err(`${p}.fail`, `${CONTENT_MSG}, or empty`);
+      } else if (GRADES.has(n.grade) && !isContent(n.fail)) {
+        err(`${p}.fail`, `required for ${n.grade} parts — ${CONTENT_MSG}`);
       }
 
       if (n.grade === 'consequential') {
@@ -117,7 +126,7 @@ export function validateAppMap(m) {
           err(`${p}.tradeoff`, 'required for consequential parts (chose A over B, cost, when to switch)');
         } else {
           for (const k of ['a', 'b', 'cost', 'when']) {
-            if (!isNonEmptyStr(t[k])) err(`${p}.tradeoff.${k}`, 'must be a non-empty string');
+            if (!isContent(t[k])) err(`${p}.tradeoff.${k}`, CONTENT_MSG);
           }
         }
       } else if (GRADES.has(n.grade) && n.tradeoff !== null && n.tradeoff !== undefined) {
@@ -131,10 +140,11 @@ export function validateAppMap(m) {
         } else {
           n.code.forEach((b, i) => {
             if (!b || typeof b !== 'object') { err(`${p}.code[${i}]`, 'must be an object'); return; }
+            // c 是真实代码行,代码没有语言之分,保持单字符串
             if (!isNonEmptyStr(b.c)) err(`${p}.code[${i}].c`, 'must contain real code lines');
-            if (!isNonEmptyStr(b.n)) err(`${p}.code[${i}].n`, 'must contain one plain-language note');
-            if (b.risk !== null && b.risk !== undefined && !isNonEmptyStr(b.risk)) {
-              err(`${p}.code[${i}].risk`, 'must be null or a non-empty string');
+            if (!isContent(b.n)) err(`${p}.code[${i}].n`, `one plain-language note — ${CONTENT_MSG}`);
+            if (b.risk !== null && b.risk !== undefined && !isContent(b.risk)) {
+              err(`${p}.code[${i}].risk`, `must be null, or ${CONTENT_MSG}`);
             }
           });
         }
