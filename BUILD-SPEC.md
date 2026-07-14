@@ -151,6 +151,13 @@ Background #0a0a0a, surface #111111, elevated #1a1a1a, panel #141414. Accent #d4
 
 Web version with hosted analysis, accounts, Supabase persistence, languages beyond en/zh, adapters beyond Claude Code (keep the core agnostic so they cost little later), mindmaps or any second canvas view, persona switching, whole-file code viewing.
 
-## 10. Working style for this session
+## 10. Change log (user-approved amendments to this spec)
+
+- **2026-07-13** Product name is **Understand Everything** (not "Understand My App"). Onboarding GitHub field must not say "Your" — any repo can be analyzed.
+- **2026-07-13** §3 amended: content values may be bilingual pairs `{"en": "...", "zh": "..."}`; `language` gains `"both"`, which is now the **default** generation mode (user decision: instant EN/中文 switching on one file, both languages written natively in one pass).
+- **2026-07-13** §4 amended: generate-prompt.md carries a "mom test" anti-jargon section with banned insider vocabulary (first M1 review verdict: too much jargon).
+- **2026-07-13** §9 amended: an OpenAI/Codex adapter is IN scope (user decision) — implemented as `adapters/codex/explain-my-app.md`, a thin instruction file; core stays agnostic, no API integration (the product never calls LLM APIs directly).
+
+## 11. Working style for this session
 
 Explain consequential choices before implementing (feynman-explainer applies). When a decision could reasonably go two ways, present the options with what the user gains and gives up, and let them pick. Keep every explanation shorter than the code it explains.
