@@ -237,3 +237,28 @@ h2.pname{font-family:var(--font-serif);font-size:21px;font-weight:400;letter-spa
   --code-bg:#020617; --code-fg:#cbd5e1;
   --risk-bg:rgba(252,211,77,.07); --risk-border:rgba(252,211,77,.35);
 }
+
+/* ── 方案 F · 碳灰青柠(?theme=lime):中性碳灰 + 酸柠绿,全 Inter 的现代工具感 ── */
+:root[data-theme="lime"]{
+  --root:#121212; --surface:#161616; --elevated:#1b1b1b; --panel:#171717;
+  --accent:#a3e635; --accent-bright:#bef264; --warn:#fbbf24;
+  --text-1:#ececec; --text-2:#a1a1aa; --text-3:#7c7c85;
+  --border-subtle:rgba(255,255,255,.09); --border-medium:rgba(163,230,53,.4);
+  --glass:rgba(18,18,18,.85);
+  --lane-fe:#7cc7ff; --lane-be:#5fd4a0; --lane-db:#d9b077;
+  --up:#60a5fa;
+  --font-serif:'Inter',system-ui,sans-serif;
+  --font-sans:'Inter',system-ui,sans-serif;
+  --on-accent:#121212;
+  --accent-soft:rgba(163,230,53,.08);
+  --accent-soft-1:rgba(163,230,53,.12);
+  --accent-soft-15:rgba(163,230,53,.16);
+  --accent-soft-2:rgba(163,230,53,.22);
+  --edge:rgba(255,255,255,.22); --edge-arrow:rgba(255,255,255,.4);
+  --sel-glow:rgba(163,230,53,.2); --pulse:rgba(163,230,53,.4);
+  --code-bg:#0a0a0a; --code-fg:#d4d4d8;
+  --risk-bg:rgba(251,191,36,.07); --risk-border:rgba(251,191,36,.35);
+}
+/* Inter 当标题字时加粗收紧,才有 Linear/Vercel 的利落感 */
+:root[data-theme="lime"] .pname,:root[data-theme="lime"] .brand,:root[data-theme="lime"] .modal h1,:root[data-theme="lime"] .stat .n{font-weight:650;letter-spacing:-.015em}
+:root[data-theme="lime"] .app::before{opacity:.015}

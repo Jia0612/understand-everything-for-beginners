@@ -43,7 +43,7 @@ export default function App() {
   // 主题试穿:网址加 ?theme=paper 或 ?theme=ink 即可切换整套配色字体(定稿后改为默认值)
   useEffect(() => {
     const t = new URLSearchParams(location.search).get('theme');
-    if (t === 'paper' || t === 'ink') document.documentElement.dataset.theme = t;
+    if (t === 'paper' || t === 'ink' || t === 'lime') document.documentElement.dataset.theme = t;
   }, []);
 
   useEffect(() => {
