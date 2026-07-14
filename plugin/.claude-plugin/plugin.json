@@ -3,8 +3,10 @@
   "description": "Turn any vibe-coded project into an interactive plain-language diagram — every part explained: what it does, why it was chosen, and what the tradeoff was",
   "version": "0.1.0",
   "author": {
-    "name": "Riley"
+    "name": "Jia0612"
   },
+  "homepage": "https://github.com/Jia0612/understand-everything",
+  "repository": "https://github.com/Jia0612/understand-everything",
   "license": "MIT",
   "keywords": [
     "codebase-explainer",
