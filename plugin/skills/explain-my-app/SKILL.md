@@ -19,7 +19,7 @@ Base directory of this skill: referred to as `$SKILL` below.
 
 2. **Ask the one allowed question (only if needed)**: if the README gave no business context (scan-result's `readme` is null or contains no who/why), ask the user: "Who is this app for and what problem does it solve?" One question, then proceed. If skipped, leave `project.scenario` and `project.pain` empty — never invent them.
 
-3. **Generate**: read `$SKILL/generate-prompt.md` and follow it exactly. Read the candidate files listed in the scan result. Write the result to `.ue/app-map.json` in the language the user asked for (`en` default, `zh` supported).
+3. **Generate**: read `$SKILL/generate-prompt.md` and follow it exactly. Read the candidate files listed in the scan result. Write the result to `.ue/app-map.json`. Default language mode is `both` (every content value is an `{en, zh}` pair); single-language `en` or `zh` only if the user asks.
 
 4. **Validate**:
    ```
@@ -34,4 +34,4 @@ Base directory of this skill: referred to as `$SKILL` below.
 - `project.scenario` / `project.pain`: README or user input only. Empty beats invented.
 - Parts, not files: 5–15 nodes, whiteboard granularity.
 - Every consequential node carries a real tradeoff (chose A over B, cost, when to switch).
-- All content strings in the user's language; tool names untranslated.
+- Bilingual by default; tool names and code untranslated. Every sentence must pass the mom test (see generate-prompt.md) — plain words beat insider vocabulary.

@@ -6,14 +6,15 @@ You are explaining a vibe-coded project to its owner: a person with **zero CS ba
 
 1. `scan-result.json` — deterministic manifest: detected stack, candidate key files, README head, file list. Trust it for *what exists*; it says nothing about *why*.
 2. The candidate key files (read them), plus any other files you need to understand the data flow.
-3. The user's requested language: `en` (default) or `zh`. **All content strings** (`name`, `role`, `impact`, `how`, `fail`, code notes, tradeoff, tourHint, project fields) are written in that language. Tool names stay as-is (React is React in both languages).
+3. The user's requested language: `both` (default — bilingual), `en`, or `zh`. When `both`, **every content value** (`name`, `role`, `impact` items, `how`, `fail`, code notes, `risk`, tradeoff fields, `tourHint`, project fields) is a pair: `{"en": "...", "zh": "..."}`, both sides complete — never leave one language behind, never machine-gloss one from the other; write each language natively. Tool names and code lines stay as-is (React is React in both languages).
 
 ## Output shape (schema is frozen — validate-schema.mjs enforces it)
 
 ```jsonc
 {
   "version": 1,
-  "language": "en",                       // or "zh"
+  "language": "both",                     // "both" (default) | "en" | "zh"
+                                          // when "both": every content value below is {"en": "...", "zh": "..."}
   "project": { "name": "", "scenario": "", "pain": "", "now": "" },
   "chain": ["id1", "id2"],                // main data flow, ordered, 4–15 parts
   "nodes": {
@@ -56,6 +57,13 @@ From the skill, verbatim — this is the bar:
 **`impact` — user-facing consequences only**: money, speed, future flexibility, what breaks, what the owner no longer has to do by hand. Never mechanism. "Visitors will see results in about a second" is impact; "this implements an asynchronous fetch pattern" is not. Order the items by what the owner cares about most.
 
 **Jargon**: every technical term gets a plain-language definition in parentheses on first use *within that node*. (An API is simply an agreed way for two programs to talk.) Terms already defined in an earlier chain node may be reused bare in later ones — the tour reads in chain order.
+
+**The mom test — this rule outranks style.** Before emitting any sentence, ask: *would a smart adult with zero tech exposure understand it on first read?* If not, rewrite. Field-tested failures to avoid (real user feedback, 2026-07-13):
+
+- Never coin insider nouns when an everyday phrase exists. "并行子代理" → "几个 AI 帮手同时干活" / "several AI helpers working at once". "模块简报" → "分工单" / "work sheet". "序列化 / 实例化 / 编排" and their English cousins ("orchestration", "instantiate") are banned outright.
+- Node `name`s are the worst place for jargon — they're the first thing seen on the canvas. Name parts the way the owner would point at them on a whiteboard.
+- If a technical word must stay (Redis, cron, API), keep it, define it in parentheses, and make the *rest* of the sentence carry the meaning — the reader should get the point even if they skip the term.
+- Prefer verbs over nouns: "把各章拼成一个网页" beats "执行组装流程".
 
 **`how`**: ≤3 sentences, mechanism explained in plain words, jargon rule applies. **`fail`**: exactly the one sentence the owner needs — what visibly happens when this part breaks, and whether it cascades. Users assume code either works or explodes; knowing there's a plan for failure is how they stay confident.
 

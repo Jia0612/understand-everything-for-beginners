@@ -1,0 +1,419 @@
+{
+  "version": 1,
+  "language": "both",
+  "project": {
+    "name": { "en": "Codebase to Course", "zh": "Codebase to Course(代码库变课程)" },
+    "scenario": {
+      "en": "Built for vibe coders — people who build software by telling AI what to do, without formal training. They've made something that works, or found an open-source project they like, and want to truly understand it.",
+      "zh": "给 vibe coder 用的——就是用大白话指挥 AI 写软件、没受过科班训练的人。他们做出了能跑的东西,或者在 GitHub 上看中了别人的开源项目,想真正搞懂它。"
+    },
+    "pain": {
+      "en": "The thing runs, but they can't tell what's happening inside: no way to know if the AI is making things up, no idea how to step in when it gets stuck, and tech talk with engineers feels intimidating. Textbook courses are too dry to get through.",
+      "zh": "东西能跑,但完全不知道里面在发生什么:分不清 AI 是不是在瞎编、AI 卡死时插不上手、跟工程师聊技术发怵。想学,又啃不动教科书式的课程。"
+    },
+    "now": {
+      "en": "Say one sentence about any repo, and you get back a web course: scroll through chapters, see real code next to plain English, take quizzes, watch animations. Double-click to open, works offline.",
+      "zh": "对着任何仓库说一句话,就能拿到一门网页课程:一章章往下翻,真代码旁边配人话解释,还有小测验和动画。双击就能打开,断网也能用。"
+    }
+  },
+  "chain": ["skill", "analysis", "curriculum", "briefs", "assets", "modules", "build", "course"],
+  "nodes": {
+    "skill": {
+      "lane": "be",
+      "tool": "SKILL.md",
+      "grade": "consequential",
+      "needs": [],
+      "feeds": ["analysis"],
+      "name": { "en": "The instruction manual", "zh": "总指挥说明书" },
+      "role": {
+        "en": "Takes the request \"turn this codebase into a course\" and walks the AI through four steps until the course exists.",
+        "zh": "接到「把这个代码库变成课程」的请求后,带着 AI 走完四步,把课程从无到有做出来。"
+      },
+      "impact": [
+        {
+          "en": "You don't need to learn any tool — one sentence to Claude and you get a finished course.",
+          "zh": "你不用会任何工具:对 Claude 说一句话,就能拿到成品课程。"
+        },
+        {
+          "en": "It's written to skip the approval step: you see a finished course first, not an outline to review — faster, at a price (see the tradeoff below).",
+          "zh": "它规定「不给你看大纲、直接开建」——你第一眼看到的就是成品,省去来回审批,但也有代价(见下面的取舍)。"
+        }
+      ],
+      "how": {
+        "en": "In an AI skill project, the instructions written for the AI are the program itself. This manual lays out four steps: read the codebase, design the outline, write the chapters, glue everything into one web page.",
+        "zh": "在 AI 技能项目里,写给 AI 看的说明书就是程序本身。这份说明书定了四步:先读懂代码,再设计大纲,然后写各章内容,最后拼成一个网页。"
+      },
+      "fail": {
+        "en": "If a rule in the manual is vague, the AI drifts a little differently every run — courses come out inconsistent in quality, with no error message anywhere.",
+        "zh": "说明书里哪条规则写得含糊,AI 每次执行就会走样——课程质量忽好忽坏,而且不会有任何报错提示。"
+      },
+      "code": [
+        {
+          "c": "### Phase 1: Codebase Analysis\n### Phase 2: Curriculum Design\n### Phase 2.5: Module Briefs (complex codebases only)\n### Phase 3: Build the Course\n### Phase 4: Review and Open",
+          "n": {
+            "en": "The four steps, straight from the manual: read → outline → write → assemble.",
+            "zh": "说明书里的四步原文:读代码 → 定大纲 → 写内容 → 拼网页。"
+          },
+          "risk": null
+        },
+        {
+          "c": "**Do NOT present the curriculum for approval — just build it.**\nThe user wants a course, not a planning document.",
+          "n": {
+            "en": "A key decision baked into the manual: don't ask for sign-off, just build.",
+            "zh": "一个关键决定直接写死在说明书里:不问你要不要,直接做。"
+          },
+          "risk": null
+        }
+      ],
+      "tradeoff": {
+        "a": { "en": "Build the finished course first, fix it after", "zh": "直接做出成品,不满意再改" },
+        "b": { "en": "Show you an outline and wait for your OK first", "zh": "先给你看大纲,你点头了再动工" },
+        "cost": {
+          "en": "If the AI misreads what the course should be, the whole thing gets rebuilt — one full round of generation time and AI budget wasted.",
+          "zh": "如果 AI 把课程方向理解偏了,就得整门课重做——白花一轮生成时间和 AI 额度。"
+        },
+        "when": {
+          "en": "If several courses in a row come back with the wrong structure, flip this rule to \"outline first, build after your OK\".",
+          "zh": "如果你连着几次拿到的课程结构都不对味,就该把这条规则改成「先出大纲、你点头再建」。"
+        }
+      },
+      "tourHint": {
+        "en": "Stop 1 · The conductor: one request in, four steps later a course comes out.",
+        "zh": "第 1 站 · 总指挥:一句话进来,四步之后一门课出去。"
+      }
+    },
+    "analysis": {
+      "lane": "be",
+      "tool": "Claude",
+      "grade": "routine",
+      "needs": ["skill"],
+      "feeds": ["curriculum"],
+      "name": { "en": "Reading the code", "zh": "读懂代码" },
+      "role": {
+        "en": "Reads through the target codebase: what the main parts are, how data moves between them, which tools it uses.",
+        "zh": "把目标代码库通读一遍:有哪些主要部件、数据在它们之间怎么流动、用了哪些工具。"
+      },
+      "impact": [
+        {
+          "en": "The deeper this reading goes, the more accurate your course — this step decides whether the course teaches truth or guesses.",
+          "zh": "读得越透,课程讲得越准——这一步决定整门课讲的是事实还是猜测。"
+        },
+        {
+          "en": "You never have to explain your own project — it figures out what the app does from the README and the code itself.",
+          "zh": "你不用解释自己的项目是干嘛的——它自己从 README 和代码里读出来。"
+        }
+      ],
+      "how": {
+        "en": "The AI opens the key files one by one: the README says what the project is for, the entry files show where things start, and following who-calls-who reveals how the parts work together. It only reads — nothing in your project is touched.",
+        "zh": "AI 把关键文件挨个打开:README 讲用途,入口文件讲从哪开始跑,再顺着「谁叫谁干活」摸清各部分怎么配合。这一步只读不改,你的项目毫发无损。"
+      },
+      "fail": {
+        "en": "If the codebase is too big to read fully, some parts get shallow coverage in the course — no error, just thinner content.",
+        "zh": "代码库太大读不完时,课程里有些部分就会讲得浅——不报错,只是内容变单薄。"
+      },
+      "code": [
+        {
+          "c": "**Figure out what the app does yourself** by reading the README,\nthe main entry points, and the UI code. Don't ask the user to\nexplain the product — they may not be familiar with it either.",
+          "n": {
+            "en": "The rule says it outright: work it out yourself, never ask the user what their product does.",
+            "zh": "规则写得很直白:自己搞懂,不许反过来问用户「你这是个啥」。"
+          },
+          "risk": null
+        }
+      ],
+      "tradeoff": null,
+      "tourHint": {
+        "en": "Stop 2 · Read first, teach second — accuracy is decided here.",
+        "zh": "第 2 站 · 先读懂再开讲,课程准不准就看这一步。"
+      }
+    },
+    "curriculum": {
+      "lane": "be",
+      "tool": "SKILL.md · Phase 2",
+      "grade": "routine",
+      "needs": ["analysis"],
+      "feeds": ["briefs"],
+      "name": { "en": "Designing the outline", "zh": "设计课程大纲" },
+      "role": {
+        "en": "Turns what it learned into a 4–6 chapter course: starting from the screens you've seen, ending at the code underneath.",
+        "zh": "把读到的东西编排成 4–6 章的课程:从「你见过的界面」讲起,一路讲到底下的代码。"
+      },
+      "impact": [
+        {
+          "en": "Few, meaty chapters — you'll never get a 20-chapter doorstop.",
+          "zh": "章少而厚,你不会拿到一门 20 章的天书。"
+        },
+        {
+          "en": "Every chapter must answer \"what's in it for you\" — after finishing you can direct AI better and troubleshoot on your own.",
+          "zh": "每一章都必须回答「这对你有什么用」——学完能直接用来指挥 AI、自己排查问题。"
+        }
+      ],
+      "how": {
+        "en": "The manual offers a menu of 7 chapter ideas (chapter 1: what this app does; chapter 2: meet the parts; ...). It picks the 4–6 that fit this codebase, like a camera zooming: wide shot first, then closer and closer to the code.",
+        "zh": "说明书里有一份「章节菜单」(第 1 章讲这 App 是干嘛的、第 2 章认识各部件……),按项目复杂度从 7 个里挑 4–6 个。整体像镜头变焦:先远景看全貌,再一点点推近到代码。"
+      },
+      "fail": {
+        "en": "A bad pick (say, padding a tiny tool out to 7 chapters) makes the course watery — a quality problem, not a crash.",
+        "zh": "挑偏了(比如给一个小工具硬凑 7 章),课程就会注水——是质量问题,不是崩溃。"
+      },
+      "code": [
+        {
+          "c": "Structure the course as **4-6 modules**. Most courses need 4-6.\nOnly go to 7-8 if the codebase genuinely has that many distinct\nconcepts worth teaching. Fewer, better modules beat more, thinner ones.",
+          "n": {
+            "en": "Chapter count is capped on purpose: fewer and richer beats more and thinner.",
+            "zh": "章节数被故意限死:宁可少而厚,不要多而薄。"
+          },
+          "risk": null
+        }
+      ],
+      "tradeoff": null,
+      "tourHint": {
+        "en": "Stop 3 · The 4–6 chapter arc takes shape here.",
+        "zh": "第 3 站 · 4–6 章的课程弧线在这里定型。"
+      }
+    },
+    "briefs": {
+      "lane": "be",
+      "tool": "briefs/",
+      "grade": "consequential",
+      "needs": ["curriculum"],
+      "feeds": ["modules"],
+      "name": { "en": "Work sheets (big projects only)", "zh": "分工单(大项目才用)" },
+      "role": {
+        "en": "For big projects, writes one work sheet per chapter — the teaching plan plus the exact code snippets to show — so several AI helpers can each write a chapter at the same time.",
+        "zh": "项目大的时候,先给每一章写一张「分工单」:教学思路 + 提前剪好的代码片段,让几个 AI 帮手同时各写一章。"
+      },
+      "impact": [
+        {
+          "en": "Several chapters get written at once, so big projects finish noticeably faster.",
+          "zh": "几章同时开写,大项目的课程明显更快出炉。"
+        },
+        {
+          "en": "Code snippets are cut once and put on the sheet — the helpers never re-read the whole codebase, which saves real AI budget (money).",
+          "zh": "代码片段只剪一次就贴在单子上,帮手们不用再翻整个代码库——省的是真金白银的 AI 额度。"
+        }
+      ],
+      "how": {
+        "en": "A work sheet holds everything one chapter needs: the story to tell, the real code lines to show, which quizzes and animations to include. The helper writing that chapter reads only its sheet, never your project.",
+        "zh": "一张分工单写清一章需要的一切:讲什么故事、贴哪几行真代码、配哪些测验和动画。写这一章的帮手只看单子干活,完全不碰你的项目。"
+      },
+      "fail": {
+        "en": "If a sheet has the wrong snippet on it, that chapter teaches the wrong thing — and the helper can't notice, because it never sees the original code.",
+        "zh": "分工单上的代码片段剪错了,那一章就会讲错——而且写章的帮手发现不了,因为它根本看不到原代码。"
+      },
+      "code": [
+        {
+          "c": "The code snippets are the critical token-saving step.\nBy pre-extracting them into the brief, writing agents\nnever need to read the codebase at all.",
+          "n": {
+            "en": "The money-saving trick, in the manual's own words: cut the snippets onto the sheet so no one re-reads the codebase.",
+            "zh": "省钱的诀窍,说明书原话:片段提前剪到单子上,谁都不用再读一遍代码库。"
+          },
+          "risk": null
+        }
+      ],
+      "tradeoff": {
+        "a": { "en": "Work sheets + several AI helpers writing at once", "zh": "分工单 + 几个 AI 帮手同时写" },
+        "b": { "en": "One AI writing every chapter, start to finish", "zh": "一个 AI 从头到尾顺着写完" },
+        "cost": {
+          "en": "One extra step (writing the sheets), and chapters may differ slightly in voice — a final read-through is needed to smooth them out.",
+          "zh": "多一道写单子的工序;各章口吻可能有细微差别,最后要再通读一遍把它们捋顺。"
+        },
+        "when": {
+          "en": "For small projects (5 chapters or fewer) splitting the work isn't worth it — the manual itself routes small projects to the one-writer path, skipping this stop.",
+          "zh": "项目小(5 章以内)就不值得分工——说明书自己也这么规定:小项目直接一个 AI 顺着写,跳过这一站。"
+        }
+      },
+      "tourHint": {
+        "en": "Stop 4 · Big projects only: cut the materials, hand out the sheets, everyone writes at once.",
+        "zh": "第 4 站 · 大项目专属:剪好料、发单子,几个帮手同时开工。"
+      }
+    },
+    "assets": {
+      "lane": "db",
+      "tool": "references/",
+      "grade": "consequential",
+      "needs": [],
+      "feeds": ["modules", "build"],
+      "name": { "en": "Ready-made parts shelf", "zh": "现成零件仓库" },
+      "role": {
+        "en": "Holds the pre-built pieces every course reuses: 1,195 lines of styling, a 498-line interaction engine, the page frame and the assembly script.",
+        "zh": "存放每门课都直接取用的现成零件:1195 行的外观样式、498 行的互动引擎、页面骨架和拼装脚本。"
+      },
+      "impact": [
+        {
+          "en": "Page-turning, quizzes and animations behave exactly the same in every course — one course won't randomly break while another works.",
+          "zh": "每门课的翻页、测验、动画表现完全一致,不会这门正常那门坏掉。"
+        },
+        {
+          "en": "The AI never rewrites these parts, which saves budget and avoids fresh AI-written bugs each time.",
+          "zh": "AI 不用每次重写这些代码——省额度,也躲开「现写现出 bug」的风险。"
+        },
+        {
+          "en": "The price: every course looks the same; changing the look means changing the shelf itself.",
+          "zh": "代价:所有课程长一个样,想换外观得动仓库本身。"
+        }
+      ],
+      "how": {
+        "en": "It's a folder of finished files inside the project. The rule is one line: copy them into each new course as-is; the AI is never allowed to regenerate them.",
+        "zh": "就是项目里一个装着成品文件的文件夹。规则只有一条:原样复制进每门新课,永远不让 AI 重新生成。"
+      },
+      "fail": {
+        "en": "If a shelf file gets corrupted, every course generated afterwards breaks in the same spot — the blast radius is \"all future courses\".",
+        "zh": "仓库里的文件一旦被改坏,之后生成的每一门课都会坏在同一个地方——波及面是「以后所有课程」。"
+      },
+      "code": [
+        {
+          "c": "/**\n * CODEBASE-TO-COURSE — COMPLETE JS ENGINE\n * Copy this file verbatim into the course output directory.\n * Never regenerate it. It handles all interactivity generically.\n */",
+          "n": {
+            "en": "The engine file declares its own rule in the first lines: copy exactly, never rebuild.",
+            "zh": "互动引擎的开头几行就是它的使用规则:原样复制,永不重造。"
+          },
+          "risk": {
+            "en": "⚠ Editing this file affects every course generated after — it's the shared engine. Back it up before touching it.",
+            "zh": "⚠ 改这个文件会影响之后生成的每一门课——它是所有课程共用的引擎,动之前先备份。"
+          }
+        }
+      ],
+      "tradeoff": {
+        "a": { "en": "Pre-built parts, copied as-is", "zh": "用现成零件,原样复制" },
+        "b": { "en": "Let the AI write fresh styling and interactions for each course", "zh": "每门课让 AI 现写外观和互动代码" },
+        "cost": {
+          "en": "Every course looks identical; personalization is basically limited to swapping the accent color.",
+          "zh": "所有课程长得一模一样,个性化基本只剩换个主题色。"
+        },
+        "when": {
+          "en": "When you start needing a distinct look per course, or interactions the shelf doesn't have — until then, stability beats personality.",
+          "zh": "当你开始需要「每门课不同风格」,或想要仓库里没有的新互动时再改——在那之前,稳定比个性重要。"
+        }
+      },
+      "tourHint": {
+        "en": "Stop 5 · The parts shelf: grab and go, never rebuild.",
+        "zh": "第 5 站 · 现成零件仓库:拿来就用,永不重造。"
+      }
+    },
+    "modules": {
+      "lane": "be",
+      "tool": "content-philosophy.md",
+      "grade": "routine",
+      "needs": ["briefs", "assets"],
+      "feeds": ["build"],
+      "name": { "en": "Writing the chapters", "zh": "写章节" },
+      "role": {
+        "en": "Writes each chapter as a web page section: real code next to plain English, a quiz, an animation — one file per chapter.",
+        "zh": "把每一章写成网页片段:真代码配人话对照、一个小测验、一段动画——一章一个文件。"
+      },
+      "impact": [
+        {
+          "en": "Every chapter is mostly visual — at least half of each screen is diagrams, cards or animations, never a wall of text.",
+          "zh": "每一章都是「图多字少」——每屏至少一半是图表、卡片或动画,不是文字墙。"
+        },
+        {
+          "en": "Code shown in the course is copied exactly from the real files — open the original and it matches, which is why you can trust it.",
+          "zh": "课程里的代码和真实文件一字不差——你翻开原文件能对上,所以敢信它。"
+        }
+      ],
+      "how": {
+        "en": "Writing follows hard rules from the content guide: at most 2–3 sentences per paragraph, at least one code-with-English block and one interactive element per chapter, and a metaphor may never be reused across chapters.",
+        "zh": "写作要守内容指南里的硬规矩:每段最多 2–3 句、每章至少一个代码对照和一个互动、比喻不许跨章重复用。"
+      },
+      "fail": {
+        "en": "If one chapter's page code is broken, only that chapter displays wrong — the others are untouched, because assembly is a simple end-to-end join.",
+        "zh": "某一章写坏了,只有那一章显示不正常,其他章不受影响——因为后面的拼装只是首尾相接,不会连锁。"
+      },
+      "code": [
+        {
+          "c": "**Critical: Use original code exactly as-is.** Never modify,\nsimplify, or trim code snippets from the codebase. The learner\nshould be able to open the real file and see the exact same code\nthey learned from — that builds trust.",
+          "n": {
+            "en": "The iron rule of content: course code must match the real file, character for character.",
+            "zh": "内容铁律:课程里的代码必须和真实文件一字不差——就是为了让你敢信。"
+          },
+          "risk": null
+        }
+      ],
+      "tradeoff": null,
+      "tourHint": {
+        "en": "Stop 6 · Chapters get written here — mostly visual, by rule.",
+        "zh": "第 6 站 · 各章在这里写成,图多字少是硬规定。"
+      }
+    },
+    "build": {
+      "lane": "be",
+      "tool": "build.sh",
+      "grade": "trivial",
+      "needs": ["modules", "assets"],
+      "feeds": ["course"],
+      "name": { "en": "Putting it together", "zh": "拼装" },
+      "role": {
+        "en": "Joins the page frame, all chapters and the footer, in order, into one file: index.html.",
+        "zh": "把页面骨架、各章内容、页脚按顺序连成一个文件:index.html。"
+      },
+      "impact": [],
+      "how": {
+        "en": "The whole step is one command that sticks files together end to end — 6 lines total, zero intelligence involved.",
+        "zh": "整个拼装就是一条「把几个文件首尾相接」的命令,总共 6 行,没有任何智能。"
+      },
+      "fail": "",
+      "code": [
+        {
+          "c": "set -e\ncat _base.html modules/*.html _footer.html > index.html\necho \"Built index.html — open it in your browser.\"",
+          "n": {
+            "en": "The entire truth of assembly: three parts joined end to end, one web page out.",
+            "zh": "拼装的全部真相:三部分首尾相接,出来一个网页文件。"
+          },
+          "risk": null
+        }
+      ],
+      "tradeoff": null,
+      "tourHint": {
+        "en": "Stop 7 · Six lines glue every chapter into one page.",
+        "zh": "第 7 站 · 六行脚本把所有章节拼成一个网页。"
+      }
+    },
+    "course": {
+      "lane": "fe",
+      "tool": "index.html",
+      "grade": "routine",
+      "needs": ["build"],
+      "feeds": [],
+      "name": { "en": "The finished course", "zh": "成品课程" },
+      "role": {
+        "en": "What the learner actually gets: a web course that opens with a double-click — scrolling chapters, quizzes, animations, and hover-to-explain on every term.",
+        "zh": "学员真正拿到手的东西:双击就能打开的网页课程——滚动翻章、小测验、动画,术语悬停就有解释。"
+      },
+      "impact": [
+        {
+          "en": "Nothing to install; send the folder to anyone and they can start learning with a double-click.",
+          "zh": "什么都不用装,整个文件夹发给任何人,对方双击就能学。"
+        },
+        {
+          "en": "Its only outside dependency is web fonts: offline, the course still works, just with plainer lettering.",
+          "zh": "唯一依赖外界的是网上字体:断网时课程照常能用,只是字体没那么好看。"
+        }
+      ],
+      "how": {
+        "en": "On open, the browser loads the assembled page and the engine from the parts shelf takes over: scroll and the progress dots follow; click a quiz answer and it grades instantly.",
+        "zh": "打开时浏览器加载拼好的页面,零件仓库里的互动引擎接管一切:滚到哪一章,顶部进度点亮到哪;点测验选项立刻判对错。"
+      },
+      "fail": {
+        "en": "If the web fonts fail to load the page never breaks — it just falls back to your computer's default font. The most harmless failure in the whole project.",
+        "zh": "网上字体加载失败,页面也不会坏,只是退回电脑自带的字体——全项目最无害的故障点。"
+      },
+      "code": [
+        {
+          "c": "<title>COURSE_TITLE</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n<script src=\"main.js\" defer></script>",
+          "n": {
+            "en": "The finished page hooks up just three things: a title, the local styling, the local engine — the last two live in the same folder.",
+            "zh": "成品页面只挂三样东西:标题、本地样式、本地互动引擎——后两样就躺在同一个文件夹里。"
+          },
+          "risk": null
+        }
+      ],
+      "tradeoff": null,
+      "tourHint": {
+        "en": "Stop 8 · The finish line: a complete course you can send to a friend.",
+        "zh": "第 8 站 · 终点:一门完整的课程,可以直接发给朋友。"
+      }
+    }
+  },
+  "diff": { "changed": [], "affected": [] }
+}
