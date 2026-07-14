@@ -3,6 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/scan-project.test.mjs tests/validate-schema.test.mjs tests/paste-into-prototype.test.mjs"
-  }
+    "test": "node --test tests/scan-project.test.mjs tests/validate-schema.test.mjs tests/paste-into-prototype.test.mjs tests/core-schema.test.mjs"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }
