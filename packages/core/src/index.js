@@ -21,9 +21,19 @@ const content = z.union([nonEmpty, biPair], {
 // 允许留空的内容(宁缺勿编)
 const contentOrEmpty = z.union([z.literal(''), content]);
 
+// 词典词条:short 必填(一两句人话),detail/example 可选
+const glossaryEntrySchema = z.object({
+  short: content,
+  detail: content.nullable().optional(),
+  example: content.nullable().optional(),
+});
+const glossarySchema = z.record(z.string(), glossaryEntrySchema);
+
 const codeBlockSchema = z.object({
   c: nonEmpty,                                // 真实代码行,不分语言
   n: content,                                 // 每块一条大白话注解
+  title: content.nullable().optional(),       // v2 原文对照:这段引用的是什么
+  src: nonEmpty.nullable().optional(),        // v2 原文对照:出自哪个文件
   risk: content.nullable().optional(),        // 只有碰外部 API/写存储/难回退的行才有
   lines: z.array(contentOrEmpty).nullable().optional(),  // 逐行费曼翻译;行数与 c 一致(superRefine 查)
 }).superRefine((b, ctx) => {
@@ -59,6 +69,7 @@ const nodeSchema = z.object({
   before: z.array(content).min(1).max(3).nullable().optional(),    // v2:没有它时系统什么样
   after: z.array(content).min(1).max(3).nullable().optional(),     // v2:有了它,什么被改善
   fail: contentOrEmpty.optional(),
+  glossary: glossarySchema.nullable().optional(),  // 节点级词典(覆盖全局)
   code: z.array(codeBlockSchema).min(1, 'must be null (configured, not coded) or a non-empty array of blocks').nullable(),
   tradeoff: tradeoffSchema.nullable().optional(),
   tourHint: contentOrEmpty.optional(),
@@ -82,6 +93,7 @@ export const appMapSchema = z.object({
     .min(CHAIN_MIN, `must have ${CHAIN_MIN}–${CHAIN_MAX} parts`)
     .max(CHAIN_MAX, `must have ${CHAIN_MIN}–${CHAIN_MAX} parts`),
   nodes: z.record(z.string(), nodeSchema),
+  glossary: glossarySchema.nullable().optional(),  // 全局词典
   diff: z.object({
     changed: z.array(z.string()),
     affected: z.array(z.string()),
@@ -130,6 +142,14 @@ export const appMapSchema = z.object({
       }
     } else if (n.tradeoff != null) {
       issue(['nodes', id, 'tradeoff'], `must be null unless grade is consequential (got grade "${n.grade}")`);
+    }
+    // v2 原文对照:每块最多 15 行(必须是一件完整的东西)
+    if (m.version === 2 && Array.isArray(n.code)) {
+      n.code.forEach((b, i) => {
+        if (typeof b?.c === 'string' && b.c.split('\n').length > 15) {
+          issue(['nodes', id, 'code', i, 'c'], `a v2 evidence block quotes ONE complete thing in at most 15 lines, got ${b.c.split('\n').length}`);
+        }
+      });
     }
   }
 

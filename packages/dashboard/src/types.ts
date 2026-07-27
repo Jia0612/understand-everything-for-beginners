@@ -4,7 +4,18 @@ export type Lane = 'fe' | 'be' | 'db';
 export type Grade = 'trivial' | 'routine' | 'consequential';
 export type Lang = 'en' | 'zh';
 
-export interface CodeBlock { c: string; n: Content; risk?: Content | null; lines?: (Content | '')[] | null }
+export interface CodeBlock {
+  c: string;
+  n: Content;
+  title?: Content | null;   // v2 原文对照:这段引用的是什么
+  src?: string | null;      // v2 原文对照:出自哪个文件
+  risk?: Content | null;
+  lines?: (Content | '')[] | null;
+}
+
+// 词典词条:short 必填,detail/example 可选
+export interface GlossaryEntry { short: Content; detail?: Content | null; example?: Content | null }
+export type Glossary = Record<string, GlossaryEntry>;
 export interface Tradeoff { a: Content; b: Content; cost: Content; when: Content }
 
 export interface MapNode {
@@ -22,6 +33,7 @@ export interface MapNode {
   how: Content;
   fail?: Content;
   code: CodeBlock[] | null;
+  glossary?: Glossary | null;   // 节点级词典(覆盖全局)
   tradeoff?: Tradeoff | null;
   tourHint?: Content;
 }
@@ -32,5 +44,6 @@ export interface AppMap {
   project: { name: Content; scenario: Content; pain: Content; now: Content };
   chain: string[];
   nodes: Record<string, MapNode>;
+  glossary?: Glossary | null;   // 全局词典
   diff: { changed: string[]; affected: string[] };
 }

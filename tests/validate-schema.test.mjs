@@ -206,3 +206,29 @@ test('before/after 可选;每边 1–3 条,4 条报错;支持双语对', () => {
   m.nodes.db.before = ['一', '二', '三', '四'];
   assert.ok(validateAppMap(m).errors.some(e => e.includes('db') && e.includes('before')));
 });
+
+// ---- 2026-07-27 第二轮:词典 + 原文对照升级(方案 A) ----
+
+test('词典(glossary):全局和节点级都合法;词条必须有 short 解释,缺了报错', () => {
+  const m = good();
+  m.version = 2;
+  for (const n of Object.values(m.nodes)) if (n.grade !== 'trivial') n.impact = n.impact.slice(0, 2);
+  m.glossary = { 'API': { short: { en: 'An agreed way for two programs to talk.', zh: '两个程序之间约定好的对话方式。' } } };
+  m.nodes.redis.glossary = { '指纹': { short: '一段数据的身份证号', detail: '同样的数据永远算出同一个指纹,一比对就知道见没见过。' } };
+  const r = validateAppMap(m);
+  assert.deepEqual(r.errors, [], JSON.stringify(r.errors));
+  m.glossary['坏词条'] = { detail: '只有细节没有 short' };
+  assert.ok(validateAppMap(m).errors.some(e => e.includes('glossary') && e.includes('坏词条')));
+});
+
+test('v2 原文对照块:可带 title(这是什么)和 src(出自哪);代码超过 15 行要报错', () => {
+  const m = good();
+  m.version = 2;
+  for (const n of Object.values(m.nodes)) if (n.grade !== 'trivial') n.impact = n.impact.slice(0, 2);
+  const block = m.nodes.scheduler.code[0];
+  block.title = { en: 'The timer config, complete', zh: '定时器配置完整原文' };
+  block.src = 'serverless.yml';
+  assert.equal(validateAppMap(m).valid, true, JSON.stringify(validateAppMap(m).errors));
+  block.c = Array.from({ length: 16 }, (_, i) => `line ${i}`).join('\n');
+  assert.ok(validateAppMap(m).errors.some(e => e.includes('scheduler') && e.includes('15')));
+});

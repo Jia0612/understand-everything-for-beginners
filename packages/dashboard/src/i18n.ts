@@ -15,6 +15,8 @@ export interface Strings {
   impact: string; costRisk: string; how: string; broke: string;
   contentsTitle: string; beforeAfter: string; beforeLabel: string; afterLabel: string;
   evidence: (n: number) => string;
+  explain: string; glossTitle: string; glossExample: string;
+  glossMiss: string; copyQ: string; copied: string;
   deps: string; needs: string; feeds: string; isStart: string; isEnd: string;
   code: (n: number) => string; codeTitle: string; noCode: string;
   trade: string; chose: string; over: string; cost: string; when: string;
@@ -41,6 +43,9 @@ export const STR: Record<Lang, Strings> = {
     contentsTitle: "What's inside this part", beforeAfter: 'Before → After',
     beforeLabel: 'Before', afterLabel: 'After',
     evidence: (n) => `Source evidence (${n} lines)`,
+    explain: 'Explain', glossTitle: 'Plain-language explanation', glossExample: 'For example',
+    glossMiss: "Not in this map's dictionary yet. For now, copy it as a question and ask your AI:",
+    copyQ: 'Copy as a question', copied: 'Copied — paste it to your AI',
     how: 'How it works', broke: 'When it breaks: ',
     deps: 'Dependencies', needs: 'It needs', feeds: 'Waiting on it',
     isStart: 'nothing · it is the start', isEnd: 'nothing · it is the end',
@@ -69,7 +74,10 @@ export const STR: Record<Lang, Strings> = {
     impact: '这样设计影响你什么', costRisk: '你承担的成本与风险',
     contentsTitle: '这一站里装着什么', beforeAfter: '前后对比',
     beforeLabel: '没有它时', afterLabel: '有了它',
-    evidence: (n) => `原文证据（${n} 行）`,
+    evidence: (n) => `原文对照（${n} 行）`,
+    explain: '解释', glossTitle: '大白话解释', glossExample: '打个比方',
+    glossMiss: '本地词典还没收录这个词。先复制成问题,去问你的 AI:',
+    copyQ: '复制成问题', copied: '已复制,去贴给你的 AI 吧',
     how: '它怎么工作', broke: '出问题时：',
     deps: '依赖关系', needs: '它需要', feeds: '谁在等它',
     isStart: '没有 · 它是起点', isEnd: '没有 · 它是终点',

@@ -1,9 +1,11 @@
-// 右侧面板:未选中时显示项目总览;选中零件时按固定六节展示(六节封顶,顺序不许变)。
+// 右侧面板:未选中时显示项目总览;选中零件时按固定分工展示。
+// 附带选词解释:在面板里选中一个词 → 浮出「解释」按钮 → 查本地词典 → 弹解释卡。
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../store';
 import { STR } from '../i18n';
 import { L } from '../lib/bilingual.mjs';
-import type { MapNode } from '../types';
+import { lookupGlossary } from '../lib/glossary.mjs';
+import type { GlossaryEntry, MapNode } from '../types';
 
 function Overview() {
   const { lang, data, source, rejectedBecause } = useStore();
@@ -129,6 +131,12 @@ function NodeDetail({ id, node }: { id: string; node: MapNode }) {
           <div className="code-body">
             {node.code.map((b, i) => (
               <div className="cblock" key={i}>
+                {(b.title || b.src) && (
+                  <div className="ev-head">
+                    {b.title ? <span className="ev-title">{L(b.title, lang)}</span> : null}
+                    {b.src ? <span className="ev-src">{b.src}</span> : null}
+                  </div>
+                )}
                 {b.lines?.length ? (
                   // 逐行费曼翻译:一行代码、一行人话,交替排
                   <div className="code-lines">
@@ -177,14 +185,80 @@ export function NodeInfo() {
   const s = STR[lang];
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { if (ref.current) ref.current.scrollTop = 0; }, [selected]);
+  // 选词解释的三个状态:浮动按钮的位置、解释卡内容、"已复制"提示
+  const [pick, setPick] = useState<{ text: string; x: number; y: number } | null>(null);
+  const [card, setCard] = useState<{ term: string; entry: GlossaryEntry | null } | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => { if (ref.current) ref.current.scrollTop = 0; setPick(null); setCard(null); }, [selected]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setPick(null); setCard(null); } };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  // 只在说明面板里响应选中;太长(>100 字)或空选择不弹按钮
+  const onMouseUp = () => {
+    const sel = window.getSelection();
+    const text = sel?.toString().trim() ?? '';
+    if (!text || text.length > 100 || !sel || sel.rangeCount === 0 || !ref.current) { setPick(null); return; }
+    const rect = sel.getRangeAt(0).getBoundingClientRect();
+    const panel = ref.current.getBoundingClientRect();
+    setPick({
+      text,
+      x: Math.max(4, rect.left - panel.left),
+      y: rect.bottom - panel.top + ref.current.scrollTop + 6,
+    });
+  };
+
+  const explain = () => {
+    if (!pick) return;
+    setCard({ term: pick.text, entry: lookupGlossary(data, selected ?? '', pick.text) });
+    setPick(null);
+    setCopied(false);
+  };
+
+  const copyQuestion = async () => {
+    if (!card) return;
+    const nodeName = selected ? L(data.nodes[selected].name, lang) : '';
+    const q = lang === 'zh'
+      ? `在「${nodeName}」这个部分里,"${card.term}" 是什么意思?请用大白话解释给完全不懂技术的人。`
+      : `In the part "${nodeName}", what does "${card.term}" mean? Please explain in plain language for a non-technical person.`;
+    try { await navigator.clipboard.writeText(q); setCopied(true); } catch { /* 剪贴板被拒就算了 */ }
+  };
 
   const node = selected ? data.nodes[selected] : null;
   return (
     <>
-      <div className="panel-scroll" ref={ref}>
+      <div className="panel-scroll" ref={ref} onMouseUp={onMouseUp} onScroll={() => setPick(null)}>
         {node && selected ? <NodeDetail key={selected} id={selected} node={node} /> : <Overview />}
+        {pick && (
+          <button className="explain-btn" style={{ left: pick.x, top: pick.y }} onClick={explain}>
+            {s.explain}
+          </button>
+        )}
       </div>
+      {card && (
+        <div className="explain-card">
+          <div className="ec-head">
+            <span className="sec-title">{s.glossTitle}</span>
+            <button className="ec-close" onClick={() => setCard(null)}>×</button>
+          </div>
+          <p className="ec-term">{card.term}</p>
+          {card.entry ? (
+            <>
+              <p className="ec-body">{L(card.entry.short, lang)}</p>
+              {card.entry.detail ? <p className="ec-body dim">{L(card.entry.detail, lang)}</p> : null}
+              {card.entry.example ? <p className="ec-body dim"><b>{s.glossExample}:</b>{L(card.entry.example, lang)}</p> : null}
+            </>
+          ) : (
+            <>
+              <p className="ec-body dim">{s.glossMiss}</p>
+              <button className="btn-hl" onClick={copyQuestion}>{copied ? s.copied : s.copyQ}</button>
+            </>
+          )}
+        </div>
+      )}
       {node && (
         <div className="panel-foot">
           <button className={`btn-hl ${hlActive ? 'active' : ''}`} onClick={toggleHl}>

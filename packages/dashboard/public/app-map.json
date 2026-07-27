@@ -67,7 +67,34 @@
             "en": "The four steps, straight from the manual: read → outline → write → assemble.",
             "zh": "说明书里的四步原文:读代码 → 定大纲 → 写内容 → 拼网页。"
           },
-          "risk": null
+          "risk": null,
+          "title": {
+            "en": "The pipeline phases, complete",
+            "zh": "流水线阶段原文(完整)"
+          },
+          "src": "SKILL.md",
+          "lines": [
+            {
+              "en": "Phase 1: read and understand the codebase",
+              "zh": "第一阶段:读懂代码库"
+            },
+            {
+              "en": "Phase 2: design the course outline",
+              "zh": "第二阶段:设计课程大纲"
+            },
+            {
+              "en": "Phase 2.5: work sheets — big projects only",
+              "zh": "第 2.5 阶段:分工单,大项目才用"
+            },
+            {
+              "en": "Phase 3: write the chapters",
+              "zh": "第三阶段:写各章内容"
+            },
+            {
+              "en": "Phase 4: assemble and open in the browser",
+              "zh": "第四阶段:拼装并在浏览器打开"
+            }
+          ]
         },
         {
           "c": "**Do NOT present the curriculum for approval — just build it.**\nThe user wants a course, not a planning document.",
@@ -75,7 +102,22 @@
             "en": "A key decision baked into the manual: don't ask for sign-off, just build.",
             "zh": "一个关键决定直接写死在说明书里:不问你要不要,直接做。"
           },
-          "risk": null
+          "risk": null,
+          "title": {
+            "en": "The \"no approval step\" rule, complete",
+            "zh": "「不问审批」规矩原文(完整)"
+          },
+          "src": "SKILL.md",
+          "lines": [
+            {
+              "en": "The rule itself: build the course, do not ask for sign-off first",
+              "zh": "规矩本体:直接做课程,不先请示"
+            },
+            {
+              "en": "The reason: the user wants a course, not a plan to review",
+              "zh": "理由:用户要的是课程,不是待审的计划书"
+            }
+          ]
         }
       ],
       "tradeoff": null,
@@ -160,7 +202,26 @@
             "en": "The rule says it outright: work it out yourself, never ask the user what their product does.",
             "zh": "规则写得很直白:自己搞懂,不许反过来问用户「你这是个啥」。"
           },
-          "risk": null
+          "risk": null,
+          "title": {
+            "en": "The \"work it out yourself\" rule, complete",
+            "zh": "「自己搞懂」规矩原文(完整)"
+          },
+          "src": "SKILL.md",
+          "lines": [
+            {
+              "en": "Read the README, entry points and UI code yourself",
+              "zh": "自己去读 README、入口文件和界面代码"
+            },
+            {
+              "en": "Never ask the user to explain their product",
+              "zh": "不许让用户来解释他们的产品"
+            },
+            {
+              "en": "Why: they may not know it well either",
+              "zh": "原因:用户自己可能也说不清"
+            }
+          ]
         }
       ],
       "tradeoff": null,
@@ -233,7 +294,26 @@
             "en": "Chapter count is capped on purpose: fewer and richer beats more and thinner.",
             "zh": "章节数被故意限死:宁可少而厚,不要多而薄。"
           },
-          "risk": null
+          "risk": null,
+          "title": {
+            "en": "The chapter-count rule, complete",
+            "zh": "章节数量规矩原文(完整)"
+          },
+          "src": "SKILL.md",
+          "lines": [
+            {
+              "en": "Default to 4–6 chapters",
+              "zh": "默认 4–6 章"
+            },
+            {
+              "en": "7–8 allowed only when the project truly has that much to teach",
+              "zh": "只有真有那么多可教时才允许 7–8 章"
+            },
+            {
+              "en": "Fewer, richer chapters beat more, thinner ones",
+              "zh": "宁可少而厚,不要多而薄"
+            }
+          ]
         }
       ],
       "tradeoff": null,
@@ -307,7 +387,26 @@
             "en": "The money-saving trick, in the manual's own words: cut the snippets onto the sheet so no one re-reads the codebase.",
             "zh": "省钱的诀窍,说明书原话:片段提前剪到单子上,谁都不用再读一遍代码库。"
           },
-          "risk": null
+          "risk": null,
+          "title": {
+            "en": "Why sheets pre-cut the code, complete",
+            "zh": "分工单预剪代码的原因原文(完整)"
+          },
+          "src": "SKILL.md",
+          "lines": [
+            {
+              "en": "Pre-cutting snippets is the key money-saving step",
+              "zh": "预剪片段是省钱的关键一步"
+            },
+            {
+              "en": "They go onto the work sheet itself",
+              "zh": "剪好的片段直接放进分工单"
+            },
+            {
+              "en": "So chapter writers never re-read the codebase",
+              "zh": "于是写章的帮手完全不用再读代码库"
+            }
+          ]
         }
       ],
       "tradeoff": {
@@ -404,7 +503,34 @@
           "risk": {
             "en": "⚠ Editing this file affects every course generated after — it's the shared engine. Back it up before touching it.",
             "zh": "⚠ 改这个文件会影响之后生成的每一门课——它是所有课程共用的引擎,动之前先备份。"
-          }
+          },
+          "title": {
+            "en": "The engine file self-declaration, complete",
+            "zh": "互动引擎的自我声明原文(完整)"
+          },
+          "src": "references/main.js",
+          "lines": [
+            {
+              "en": "Comment block opens",
+              "zh": "注释块开头"
+            },
+            {
+              "en": "Its identity: the complete interaction engine",
+              "zh": "身份:完整的互动引擎"
+            },
+            {
+              "en": "Rule: copy the file exactly into each course",
+              "zh": "规矩:原样复制进每门课"
+            },
+            {
+              "en": "Rule: never let the AI regenerate it",
+              "zh": "规矩:永不让 AI 重新生成"
+            },
+            {
+              "en": "Comment block closes",
+              "zh": "注释块结尾"
+            }
+          ]
         }
       ],
       "tradeoff": {
@@ -572,7 +698,12 @@
               "en": "Prints a friendly \"done, open it in your browser\".",
               "zh": "打印一句「拼好了,去浏览器打开」。"
             }
-          ]
+          ],
+          "title": {
+            "en": "The whole assembly script, complete",
+            "zh": "拼装脚本全文(完整)"
+          },
+          "src": "references/build.sh"
         }
       ],
       "tradeoff": null,
@@ -633,7 +764,12 @@
               "en": "Pulls in the local interaction engine: quizzes, progress dots, animations.",
               "zh": "接上本地互动引擎:测验、进度点、动画都靠它。"
             }
-          ]
+          ],
+          "title": {
+            "en": "Everything the finished page loads, complete",
+            "zh": "成品页面挂载的全部内容(完整)"
+          },
+          "src": "course/_base.html"
         }
       ],
       "tradeoff": null,
@@ -676,5 +812,137 @@
   "diff": {
     "changed": [],
     "affected": []
+  },
+  "glossary": {
+    "vibe coder": {
+      "short": {
+        "en": "Someone who builds software by telling AI what to do in plain language, without formal coding training.",
+        "zh": "用大白话指挥 AI 写软件的人,没受过科班编程训练。"
+      }
+    },
+    "pipeline": {
+      "short": {
+        "en": "A fixed sequence of steps where each step hands its result to the next — like an assembly line.",
+        "zh": "一道接一道的固定工序,每道的产出交给下一道——就像装配流水线。"
+      }
+    },
+    "流水线": {
+      "short": {
+        "en": "A fixed sequence of steps where each step hands its result to the next — like an assembly line.",
+        "zh": "一道接一道的固定工序,每道的产出交给下一道——就像装配流水线。"
+      }
+    },
+    "codebase": {
+      "short": {
+        "en": "All the files of a software project, kept together in one place.",
+        "zh": "一个软件项目的全部文件,放在一起的总称。"
+      }
+    },
+    "代码库": {
+      "short": {
+        "en": "All the files of a software project, kept together in one place.",
+        "zh": "一个软件项目的全部文件,放在一起的总称。"
+      }
+    },
+    "README": {
+      "short": {
+        "en": "A project's front-page document: what it is, who it's for, how to use it.",
+        "zh": "项目的门面文档:它是什么、给谁用、怎么用。"
+      },
+      "example": {
+        "en": "Like the description card next to a museum exhibit.",
+        "zh": "就像博物馆展品旁边那张说明卡。"
+      }
+    },
+    "SKILL.md": {
+      "short": {
+        "en": "The instruction file an AI coding tool reads to learn a new ability — here, how to turn a codebase into a course.",
+        "zh": "AI 编程工具用来学会一项新本领的说明文件——在这里,教的是\"把代码库变成课程\"。"
+      }
+    },
+    "Markdown": {
+      "short": {
+        "en": "A simple way to write formatted text with plain characters — # for titles, ** for bold.",
+        "zh": "用普通字符写出带格式文字的简单办法——# 是标题,** 是加粗。"
+      }
+    },
+    "markdown": {
+      "short": {
+        "en": "A simple way to write formatted text with plain characters — # for titles, ** for bold.",
+        "zh": "用普通字符写出带格式文字的简单办法——# 是标题,** 是加粗。"
+      }
+    },
+    "interaction engine": {
+      "short": {
+        "en": "The pre-written program that makes the course page respond: grading quizzes, playing animations, tracking progress.",
+        "zh": "让课程页面\"会动\"的现成程序:判测验、放动画、记进度。"
+      }
+    },
+    "互动引擎": {
+      "short": {
+        "en": "The pre-written program that makes the course page respond: grading quizzes, playing animations, tracking progress.",
+        "zh": "让课程页面\"会动\"的现成程序:判测验、放动画、记进度。"
+      }
+    },
+    "working memory": {
+      "short": {
+        "en": "The limited amount of text an AI can pay attention to at once; overflow it and it starts forgetting.",
+        "zh": "AI 一次能装在脑子里的文字量是有限的;塞太多它就开始忘。"
+      }
+    },
+    "工作记忆": {
+      "short": {
+        "en": "The limited amount of text an AI can pay attention to at once; overflow it and it starts forgetting.",
+        "zh": "AI 一次能装在脑子里的文字量是有限的;塞太多它就开始忘。"
+      }
+    },
+    "tech stack": {
+      "short": {
+        "en": "The set of tools and languages a project is built with.",
+        "zh": "一个项目用到的工具和语言的组合。"
+      }
+    },
+    "技术栈": {
+      "short": {
+        "en": "The set of tools and languages a project is built with.",
+        "zh": "一个项目用到的工具和语言的组合。"
+      }
+    },
+    "behavior rules": {
+      "short": {
+        "en": "Written instructions that steer how an AI acts — what to always do, what never to do.",
+        "zh": "写下来引导 AI 怎么做事的规矩——什么必须做、什么不许做。"
+      }
+    },
+    "行为规则": {
+      "short": {
+        "en": "Written instructions that steer how an AI acts — what to always do, what never to do.",
+        "zh": "写下来引导 AI 怎么做事的规矩——什么必须做、什么不许做。"
+      }
+    },
+    "quiz": {
+      "short": {
+        "en": "A short in-page question set that checks you understood, graded instantly.",
+        "zh": "页面里的小问题,当场判分,检查你是不是真懂了。"
+      }
+    },
+    "测验": {
+      "short": {
+        "en": "A short in-page question set that checks you understood, graded instantly.",
+        "zh": "页面里的小问题,当场判分,检查你是不是真懂了。"
+      }
+    },
+    "entry file": {
+      "short": {
+        "en": "The file where a program starts running — follow it and you follow the whole flow.",
+        "zh": "程序开始运行的第一个文件——顺着它就能顺出整条流程。"
+      }
+    },
+    "入口文件": {
+      "short": {
+        "en": "The file where a program starts running — follow it and you follow the whole flow.",
+        "zh": "程序开始运行的第一个文件——顺着它就能顺出整条流程。"
+      }
+    }
   }
 }

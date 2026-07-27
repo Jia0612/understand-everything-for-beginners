@@ -73,3 +73,23 @@ test('外部地图文件合格就用它;不合格就退回示例项目,并留下
   assert.equal(none.source, 'demo');
   assert.deepEqual(none.rejectedBecause, []);
 });
+
+// ---- 2026-07-27 第二轮:选词解释的词典查询 ----
+import { lookupGlossary, normalizeTerm } from '../packages/dashboard/src/lib/glossary.mjs';
+
+test('词典查询:当前节点的词条优先于全局词条', () => {
+  const map = {
+    glossary: { 'api': { short: '全局解释' } },
+    nodes: { n1: { glossary: { 'api': { short: '节点专属解释' } } }, n2: {} },
+  };
+  assert.equal(lookupGlossary(map, 'n1', 'API').short, '节点专属解释');
+  assert.equal(lookupGlossary(map, 'n2', 'API').short, '全局解释');
+});
+
+test('词典查询:忽略大小写、首尾标点和多余空格;查不到返回 null', () => {
+  const map = { glossary: { 'behavior rules': { short: 'ok' }, '流水线': { short: '一道接一道的工序' } }, nodes: { n1: {} } };
+  assert.ok(lookupGlossary(map, 'n1', '  Behavior Rules,'));
+  assert.ok(lookupGlossary(map, 'n1', '「流水线」'));
+  assert.equal(lookupGlossary(map, 'n1', '不存在的词'), null);
+  assert.equal(normalizeTerm('  “Behavior  Rules”. '), 'behavior rules');
+});

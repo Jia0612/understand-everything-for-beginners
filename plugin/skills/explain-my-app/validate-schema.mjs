@@ -17,6 +17,24 @@ const CHAIN_MIN = 4;
 const CHAIN_MAX = 15;
 
 const isStr = (v) => typeof v === 'string';
+
+/**
+ * 词典(glossary)校验:{ 词条: { short 必填, detail/example 可选 } }
+ * short = 一两句就能看懂的解释;detail = 展开讲;example = 打个比方
+ */
+function checkGlossary(g, path, err, isContent) {
+  if (g === undefined || g === null) return;
+  if (typeof g !== 'object' || Array.isArray(g)) { err(path, 'must be an object of { term: entry }'); return; }
+  for (const [term, entry] of Object.entries(g)) {
+    if (!entry || typeof entry !== 'object') { err(`${path}.${term}`, 'entry must be an object'); continue; }
+    if (!isContent(entry.short)) err(`${path}.${term}`, 'short (a 1–2 sentence plain explanation) is required');
+    for (const k of ['detail', 'example']) {
+      if (entry[k] !== undefined && entry[k] !== null && !isContent(entry[k])) {
+        err(`${path}.${term}.${k}`, 'must be a content value if present');
+      }
+    }
+  }
+}
 const isNonEmptyStr = (v) => typeof v === 'string' && v.trim().length > 0;
 // 双语值:{ en, zh } 两种语言都必须有、都不能为空(2026-07-13 用户拍板支持双语)
 const isBiPair = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
@@ -134,6 +152,7 @@ export function validateAppMap(m) {
       boundedList('contents', 1, 8);   // 这一站里装着什么
       boundedList('before', 1, 3);     // 没有它时系统什么样
       boundedList('after', 1, 3);      // 有了它,什么被改善(不许写"绝不再出错")
+      checkGlossary(n.glossary, `${p}.glossary`, err, isContent);  // 节点级词典(覆盖全局)
 
       if (n.grade === 'trivial') {
         if (!isContentOrEmpty(n.fail ?? '')) err(`${p}.fail`, `${CONTENT_MSG}, or empty`);
@@ -163,6 +182,16 @@ export function validateAppMap(m) {
             if (!b || typeof b !== 'object') { err(`${p}.code[${i}]`, 'must be an object'); return; }
             // c 是真实代码行,代码没有语言之分,保持单字符串
             if (!isNonEmptyStr(b.c)) err(`${p}.code[${i}].c`, 'must contain real code lines');
+            // v2 原文对照:必须是一件完整的东西,最多 15 行;title=这是什么,src=出自哪个文件
+            if (isV2 && isNonEmptyStr(b.c) && b.c.split('\n').length > 15) {
+              err(`${p}.code[${i}].c`, `a v2 evidence block quotes ONE complete thing in at most 15 lines, got ${b.c.split('\n').length}`);
+            }
+            if (b.title !== undefined && b.title !== null && !isContent(b.title)) {
+              err(`${p}.code[${i}].title`, `must be a content value (what this quote is) if present`);
+            }
+            if (b.src !== undefined && b.src !== null && !isNonEmptyStr(b.src)) {
+              err(`${p}.code[${i}].src`, 'must be a non-empty file path if present');
+            }
             if (!isContent(b.n)) err(`${p}.code[${i}].n`, `one plain-language note — ${CONTENT_MSG}`);
             if (b.risk !== null && b.risk !== undefined && !isContent(b.risk)) {
               err(`${p}.code[${i}].risk`, `must be null, or ${CONTENT_MSG}`);
@@ -181,6 +210,9 @@ export function validateAppMap(m) {
       }
     }
   }
+
+  // --- 全局词典 ---
+  checkGlossary(m.glossary, 'glossary', err, isContent);
 
   // --- diff ---
   if (!m.diff || typeof m.diff !== 'object') {
