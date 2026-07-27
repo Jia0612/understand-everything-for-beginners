@@ -262,3 +262,11 @@ h2.pname{font-family:var(--font-serif);font-size:21px;font-weight:400;letter-spa
 /* Inter 当标题字时加粗收紧,才有 Linear/Vercel 的利落感 */
 :root[data-theme="lime"] .pname,:root[data-theme="lime"] .brand,:root[data-theme="lime"] .modal h1,:root[data-theme="lime"] .stat .n{font-weight:650;letter-spacing:-.015em}
 :root[data-theme="lime"] .app::before{opacity:.015}
+
+/* 前后对比:Before / After 两行 */
+.ba-row{display:flex;gap:10px;margin-bottom:9px;align-items:flex-start}
+.ba-label{flex-shrink:0;min-width:52px;text-align:center;font-size:10px;font-weight:600;letter-spacing:.06em;border-radius:5px;padding:2px 7px;margin-top:2px}
+.ba-label.before{color:var(--text-3);border:1px solid var(--border-subtle)}
+.ba-label.after{color:var(--accent);border:1px solid var(--border-medium)}
+.ba-list{flex:1}
+.ba-list li{list-style:none;font-size:12.5px;line-height:1.6;color:var(--text-1);margin-bottom:4px}

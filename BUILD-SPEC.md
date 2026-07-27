@@ -162,6 +162,8 @@ Web version with hosted analysis, accounts, Supabase persistence, languages beyo
 
 - **2026-07-13 (final)** §6 superseded: user picked palette F "Graphite Lime" (bg #121212, accent #a3e635, all-Inter type) as the DEFAULT dashboard theme. Original gold tokens remain available via ?theme=gold; paper/ink kept as candidates. All colors flow through the CSS variable tables in packages/dashboard/src/tokens.css.
 
+- **2026-07-27 (v2 content model, user-authored redesign)** §3 upgraded to `version: 2` (dashboard accepts both): new optional node fields `contents` (1–8, literal composition), `before`/`after` (1–3 each, evidence-graded: Observed/Inferred/Unknown, no absolutes); `impact` re-scoped to owner cost & risk only (0–2 items, UI title "Cost and risk for you / 你承担的成本与风险"); `code` renamed in UI to "Source evidence / 原文证据", 3–15 lines, collapsed. Planned next: node/global `glossary` + select-to-explain (local dictionary first, then CLI-proxied `/api/explain` with env-var keys — never localStorage).
+
 ## 11. Working style for this session
 
 Explain consequential choices before implementing (feynman-explainer applies). When a decision could reasonably go two ways, present the options with what the user gains and gives up, and let them pick. Keep every explanation shorter than the code it explains.

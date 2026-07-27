@@ -15,7 +15,10 @@ export interface MapNode {
   feeds: string[];
   name: Content;
   role: Content;
-  impact: Content[];
+  contents?: Content[] | null;   // v2:这一站里装着什么(1–8 条)
+  before?: Content[] | null;     // v2:没有它时系统什么样(1–3 条)
+  after?: Content[] | null;      // v2:有了它,什么被改善(1–3 条)
+  impact: Content[];             // v1:宽泛影响 2–3 条;v2:你承担的成本与风险 0–2 条
   how: Content;
   fail?: Content;
   code: CodeBlock[] | null;
@@ -24,7 +27,7 @@ export interface MapNode {
 }
 
 export interface AppMap {
-  version: 1;
+  version: 1 | 2;
   language: 'en' | 'zh' | 'both';
   project: { name: Content; scenario: Content; pain: Content; now: Content };
   chain: string[];

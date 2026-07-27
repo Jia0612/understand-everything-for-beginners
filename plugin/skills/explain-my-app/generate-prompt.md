@@ -12,7 +12,7 @@ You are explaining a vibe-coded project to its owner: a person with **zero CS ba
 
 ```jsonc
 {
-  "version": 1,
+  "version": 2,                           // ALWAYS generate version 2
   "language": "both",                     // "both" (default) | "en" | "zh"
                                           // when "both": every content value below is {"en": "...", "zh": "..."}
   "project": { "name": "", "scenario": "", "pain": "", "now": "" },
@@ -23,11 +23,17 @@ You are explaining a vibe-coded project to its owner: a person with **zero CS ba
       "tool": "cronjob / AWS Lambda",     // the actual tech on the node card
       "grade": "routine",                 // "trivial" | "routine" | "consequential"
       "needs": [], "feeds": ["id2"],      // upstream / downstream node ids
-      "name": "", "role": "",
-      "impact": ["", ""],                 // 2–3 items, user-facing only
-      "how": "",                          // ≤3 sentences
+      "name": "", "role": "",             // role = what this part is responsible for, one sentence
+      "contents": ["", ""],               // 1–8 items: what is ACTUALLY inside this part (e.g. the four
+                                          // rules, listed one per item). Composition, not a re-summary of role.
+      "before": [""],                     // 1–3 items: what the system is like WITHOUT this part
+      "after": [""],                      // 1–3 items: what it improves / automates. Never absolutes.
+      "impact": [""],                     // 0–2 items: cost & risk the OWNER carries. Nothing else.
+      "how": "",                          // ≤3 sentences, mechanism only
       "fail": "",                         // 1 sentence
-      "code": [ { "c": "3–8 real lines", "n": "one note per block", "risk": null } ],  // or null
+      "code": [ { "c": "3–15 real lines", "n": "one note per block", "lines": [""], "risk": null } ],  // or null
+                                          // code = source EVIDENCE, collapsed by default in the UI —
+                                          // not the primary way the owner understands the part
       "tradeoff": { "a": "", "b": "", "cost": "", "when": "" },  // ONLY when consequential, else null
       "tourHint": ""
     }
@@ -35,6 +41,14 @@ You are explaining a vibe-coded project to its owner: a person with **zero CS ba
   "diff": { "changed": [], "affected": [] }   // empty on first generation
 }
 ```
+
+**Division of labor (no overlaps, this is the whole point of v2):**
+- `role` = what it is responsible for
+- `contents` = what is literally inside it
+- `before`/`after` = what it changed
+- `impact` = what the owner pays or risks for this design
+- `how` = how it works · `fail` = what breaking looks like
+- `code` = where the evidence is
 
 ## Granularity: parts, not files
 
@@ -54,7 +68,14 @@ From the skill, verbatim — this is the bar:
 > Test the analogy before committing: would it survive a follow-up question? If it breaks immediately, a plain one-sentence description beats a forced analogy. Skip analogies entirely for concepts the user already knows.
 > Simplify without lying. "A database is where your data lives, organized so you can find things fast" is honest. "A database is just a big spreadsheet" plants a wrong mental model that costs them later.
 
-**`impact` — user-facing consequences only**: money, speed, future flexibility, what breaks, what the owner no longer has to do by hand. Never mechanism. "Visitors will see results in about a second" is impact; "this implements an asynchronous fetch pattern" is not. Order the items by what the owner cares about most.
+**`contents` — what is actually inside (1–8 items).** The literal composition of the part, one item each, in plain words. For "Four rules shape the AI's choices" this is the four rules themselves, one per item. Never a paraphrase of `role`; if you can't enumerate real contents, the part is probably drawn at the wrong granularity.
+
+**`before` / `after` — what it changed (1–3 items each side), with an honesty ladder.** `before` = what the system/owner's life is like without this part (manual work, what goes wrong). `after` = what is now automated, which mistakes become less likely, and what limits remain. **Never absolutes** — "the AI is now required to state assumptions" is honest; "these problems can never happen again" is banned. Three evidence levels:
+- **Observed** — README/code/config directly shows it: state it plainly.
+- **Inferred** — reasonably deduced from the code: hedge it ("usually", "tends to").
+- **Unknown** — no evidence: leave it out. Never invent history.
+
+**`impact` — cost & risk the owner carries (0–2 items, empty is fine).** ONLY these categories: money / running cost, maintenance burden, privacy or reliability risk, future switching cost. Everything else belongs in before/after. Do not pad — most routine parts deserve 0–1 items.
 
 **Technical names may stay; filler jargon may not.** Keep real names the owner will hear again from engineers or dashboards: `Fetch Layer`, `API`, `Redis`, `PostgreSQL`, `cron`, `SDK`, `React`, file names, table names, function names, and product names. Those are labels for real things. But the sentence around the label must be plain enough that the owner still understands the point if they skip the label.
 
@@ -95,7 +116,7 @@ Every technical term gets a plain-language definition in parentheses on first us
 
 **`tradeoff`**: `a` = what was chosen, `b` = the serious alternative, `cost` = what the owner pays for the choice, `when` = the concrete signal that means it's time to switch ("when rows pass 100M, move to BigQuery"). `when` is an action trigger, not a vague "if you scale".
 
-**`code`**: 3–8 lines copied from the real source (trim, don't paraphrase) that ARE the component — the timer line of the scheduler, the primary key of the table. One note per block (`n`), plain language.
+**`code` — source evidence, not the main course**: 3–15 lines copied from the real source (trim, don't paraphrase) that back up what `contents` claims — the timer line of the scheduler, the four rules' actual text, the primary key of the table. The UI shows it collapsed under the title "Source evidence / 原文证据". One note per block (`n`), plain language.
 
 **`lines` — per-line Feynman translation (required on every block, user rule 2026-07-13).** An array with exactly one entry per code line: what THAT line means, in words the owner can repeat ("this line is the timer itself: fire at minute 0 of every hour"). Same mom-test bar as everything else; bilingual pairs when language is `both`. A line with genuinely nothing to say (a lone brace, a blank line) gets `""` — but be honest, not lazy: most lines deserve a sentence. `risk` is non-null only for blocks whose lines call external APIs, write to storage, or are hard to reverse — and it must state the consequence: "this line spends your API quota", "changing this table is the hardest thing in the project to undo". If the part is configured rather than coded (a BI tool, a hosted service), `code` is `null`.
 

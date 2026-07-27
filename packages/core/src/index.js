@@ -55,6 +55,9 @@ const nodeSchema = z.object({
   role: content,
   how: content,
   impact: z.array(content),
+  contents: z.array(content).min(1).max(8).nullable().optional(),  // v2:这一站里装着什么
+  before: z.array(content).min(1).max(3).nullable().optional(),    // v2:没有它时系统什么样
+  after: z.array(content).min(1).max(3).nullable().optional(),     // v2:有了它,什么被改善
   fail: contentOrEmpty.optional(),
   code: z.array(codeBlockSchema).min(1, 'must be null (configured, not coded) or a non-empty array of blocks').nullable(),
   tradeoff: tradeoffSchema.nullable().optional(),
@@ -66,7 +69,8 @@ const nodeSchema = z.object({
  * 跨字段规则(chain 引用、等级管内容)在 superRefine 里补齐。
  */
 export const appMapSchema = z.object({
-  version: z.literal(1),
+  // v1 = impact 是宽泛影响(2–3 条);v2 = impact 只讲成本与风险(0–2 条)+ contents/before/after
+  version: z.union([z.literal(1), z.literal(2)]),
   language: z.enum(['en', 'zh', 'both']),
   project: z.object({
     name: content,
@@ -106,10 +110,17 @@ export const appMapSchema = z.object({
     // 等级管内容:trivial 只讲角色和原理;routine 加影响和故障;consequential 再加取舍
     if (n.grade === 'trivial') {
       if (n.impact.length !== 0) issue(['nodes', id, 'impact'], 'trivial parts carry no impact list');
+    } else if (m.version === 2) {
+      if (n.impact.length > 2) {
+        issue(['nodes', id, 'impact'], `v2 impact (cost & risk) allows at most 2 items, got ${n.impact.length}`);
+      }
     } else {
       if (n.impact.length < 2 || n.impact.length > 3) {
         issue(['nodes', id, 'impact'], `must have 2–3 items for ${n.grade} parts, got ${n.impact.length}`);
       }
+    }
+    // 故障说明:routine 及以上必填,v1/v2 一视同仁
+    if (n.grade !== 'trivial') {
       const failOk = typeof n.fail === 'string' ? n.fail.trim().length > 0 : n.fail != null;
       if (!failOk) issue(['nodes', id, 'fail'], `required for ${n.grade} parts`);
     }

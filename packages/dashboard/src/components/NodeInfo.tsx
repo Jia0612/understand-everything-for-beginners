@@ -70,9 +70,39 @@ function NodeDetail({ id, node }: { id: string; node: MapNode }) {
       </div>
       <p className="role">{L(node.role, lang)}</p>
 
+      {/* v2:这一站里装着什么(实际组成清单) */}
+      {node.contents?.length ? (
+        <div className="sec">
+          <div className="sec-title">{s.contentsTitle}</div>
+          <ul className="impact">
+            {node.contents.map((it, i) => <li key={i}>{L(it, lang)}</li>)}
+          </ul>
+        </div>
+      ) : null}
+
+      {/* v2:前后对比 */}
+      {(node.before?.length || node.after?.length) ? (
+        <div className="sec">
+          <div className="sec-title">{s.beforeAfter}</div>
+          {node.before?.length ? (
+            <div className="ba-row">
+              <span className="ba-label before">{s.beforeLabel}</span>
+              <ul className="ba-list">{node.before.map((it, i) => <li key={i}>{L(it, lang)}</li>)}</ul>
+            </div>
+          ) : null}
+          {node.after?.length ? (
+            <div className="ba-row">
+              <span className="ba-label after">{s.afterLabel}</span>
+              <ul className="ba-list">{node.after.map((it, i) => <li key={i}>{L(it, lang)}</li>)}</ul>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {/* v1 = 宽泛影响;v2 = 只讲你承担的成本与风险 */}
       {node.impact?.length > 0 && (
         <div className="sec">
-          <div className="sec-title">{s.impact}</div>
+          <div className="sec-title">{data.version === 2 ? s.costRisk : s.impact}</div>
           <ul className="impact">
             {node.impact.map((it, i) => <li key={i}>{L(it, lang)}</li>)}
           </ul>
@@ -94,7 +124,7 @@ function NodeDetail({ id, node }: { id: string; node: MapNode }) {
       {node.code?.length ? (
         <div className={`sec ${codeOpen ? 'code-open' : ''}`}>
           <button className="code-toggle" onClick={() => setCodeOpen(!codeOpen)}>
-            <span>{s.code(codeLines)}</span><span className="arrow">›</span>
+            <span>{s.evidence(codeLines)}</span><span className="arrow">›</span>
           </button>
           <div className="code-body">
             {node.code.map((b, i) => (

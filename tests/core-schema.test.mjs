@@ -73,3 +73,22 @@ test('生成重试流程:两次都坏 → 明确拒绝,错误可读,绝不返回
     },
   );
 });
+
+// ---- 2026-07-27 内容模型 v2:两套校验器对 v2 样本的判决也必须一致 ----
+test('v2 样本(合格与典型改坏)在两套校验器下判决一致;v2 缺 fail 照样被拦', () => {
+  const mkV2 = () => { const m = good(); m.version = 2; for (const n of Object.values(m.nodes)) { if (n.grade !== 'trivial') n.impact = n.impact.slice(0, 2); } return m; };
+  const samples = [mkV2()];
+  const breakers = [
+    (m) => { m.nodes.scheduler.impact = ['一', '二', '三']; },      // v2 impact 超 2 条
+    (m) => { m.nodes.fetch.contents = []; },                        // contents 空数组
+    (m) => { m.nodes.db.before = ['一', '二', '三', '四']; },        // before 超 3 条
+    (m) => { m.nodes.scheduler.fail = ''; },                        // v2 也不许缺故障说明
+  ];
+  for (const b of breakers) { const m = mkV2(); b(m); samples.push(m); }
+  samples.forEach((m, i) => {
+    const a = validateAppMap(m).valid, b = pluginValidate(m).valid;
+    assert.equal(a, b, `v2 样本 ${i}:zod 判 ${a},插件判 ${b}`);
+  });
+  assert.equal(validateAppMap(samples[0]).valid, true, '合格 v2 必须放行');
+  assert.equal(validateAppMap(samples[4]).valid, false, 'v2 缺 fail 必须拦下');
+});

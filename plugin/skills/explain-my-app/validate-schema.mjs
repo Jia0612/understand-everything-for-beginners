@@ -40,7 +40,9 @@ export function validateAppMap(m) {
   }
 
   // --- 顶层字段 ---
-  if (m.version !== 1) err('version', `must be 1, got ${JSON.stringify(m.version)}`);
+  // v1 = 老含义(impact 是宽泛影响,2–3 条);v2 = 新含义(impact 只讲成本与风险,0–2 条,并新增 contents/before/after)
+  if (m.version !== 1 && m.version !== 2) err('version', `must be 1 or 2, got ${JSON.stringify(m.version)}`);
+  const isV2 = m.version === 2;
   if (m.language !== 'en' && m.language !== 'zh' && m.language !== 'both') {
     err('language', `must be "en", "zh" or "both", got ${JSON.stringify(m.language)}`);
   }
@@ -108,11 +110,30 @@ export function validateAppMap(m) {
       } else if (n.grade === 'trivial') {
         if (n.impact.length !== 0) err(`${p}.impact`, 'trivial parts carry no impact list');
       } else if (GRADES.has(n.grade)) {
-        if (n.impact.length < 2 || n.impact.length > 3) {
+        if (isV2) {
+          // v2:impact = 你承担的成本与风险,宁缺勿凑,0–2 条
+          if (n.impact.length > 2) {
+            err(`${p}.impact`, `v2 impact (cost & risk) allows at most 2 items, got ${n.impact.length}`);
+          }
+        } else if (n.impact.length < 2 || n.impact.length > 3) {
           err(`${p}.impact`, `must have 2–3 items for ${n.grade} parts, got ${n.impact.length}`);
         }
         if (!n.impact.every(isContent)) err(`${p}.impact`, `every item ${CONTENT_MSG}`);
       }
+
+      // v2 新格子(全部可选,旧地图不受影响)
+      const boundedList = (key, min, max) => {
+        const v = n[key];
+        if (v === undefined || v === null) return;
+        if (!Array.isArray(v) || v.length < min || v.length > max) {
+          err(`${p}.${key}`, `must be an array of ${min}–${max} items, got ${Array.isArray(v) ? v.length : typeof v}`);
+        } else if (!v.every(isContent)) {
+          err(`${p}.${key}`, `every item ${CONTENT_MSG}`);
+        }
+      };
+      boundedList('contents', 1, 8);   // 这一站里装着什么
+      boundedList('before', 1, 3);     // 没有它时系统什么样
+      boundedList('after', 1, 3);      // 有了它,什么被改善(不许写"绝不再出错")
 
       if (n.grade === 'trivial') {
         if (!isContentOrEmpty(n.fail ?? '')) err(`${p}.fail`, `${CONTENT_MSG}, or empty`);

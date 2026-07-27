@@ -73,9 +73,9 @@ test('needs/feeds 引用的 id 必须存在', () => {
   assert.ok(r.errors.some(e => e.includes('fetch') && e.includes('nonexistent')));
 });
 
-test('version 不是 1、language 不是 en/zh 都要报错', () => {
+test('version 不是 1/2、language 不是 en/zh 都要报错', () => {
   const m = good();
-  m.version = 2;
+  m.version = 3;
   m.language = 'fr';
   const r = validateAppMap(m);
   assert.ok(r.errors.some(e => e.includes('version')));
@@ -159,4 +159,50 @@ test('逐行翻译支持双语对,允许个别行留空(没什么好说的行)',
   block.lines = Array.from({ length: n }, () => ({ en: 'plain', zh: '人话' }));
   block.lines[n - 1] = '';
   assert.equal(validateAppMap(m).valid, true, JSON.stringify(validateAppMap(m).errors));
+});
+
+// ---- 2026-07-27 用户拍板:内容模型 v2(contents / before / after / impact 改义为成本与风险) ----
+
+// 把示例升级成一份最小 v2 地图
+function v2map() {
+  const m = good();
+  m.version = 2;
+  for (const n of Object.values(m.nodes)) {
+    // v2 里 impact 只讲成本与风险,0–2 条
+    if (n.grade !== 'trivial') n.impact = n.impact.slice(0, 2);
+  }
+  return m;
+}
+
+test('version 2 的地图合法;v1 旧地图规则原样不变', () => {
+  const r = validateAppMap(v2map());
+  assert.deepEqual(r.errors, [], JSON.stringify(r.errors));
+  assert.equal(validateAppMap(good()).valid, true, 'v1 必须照旧合法');
+});
+
+test('v2 的 impact(成本与风险)最多 2 条,0 条也合法;3 条要报错', () => {
+  const m = v2map();
+  m.nodes.scheduler.impact = [];
+  assert.equal(validateAppMap(m).valid, true, '0 条应合法');
+  m.nodes.scheduler.impact = ['成本一', '风险二', '第三条'];
+  assert.ok(validateAppMap(m).errors.some(e => e.includes('scheduler') && e.includes('impact')));
+});
+
+test('contents(这一站里装着什么)可选;有则 1–8 条,9 条报错', () => {
+  const m = v2map();
+  m.nodes.fetch.contents = ['规则一', '规则二', '规则三'];
+  assert.equal(validateAppMap(m).valid, true, JSON.stringify(validateAppMap(m).errors));
+  m.nodes.fetch.contents = Array.from({ length: 9 }, (_, i) => `条目 ${i}`);
+  assert.ok(validateAppMap(m).errors.some(e => e.includes('fetch') && e.includes('contents')));
+  m.nodes.fetch.contents = [];
+  assert.ok(validateAppMap(m).errors.some(e => e.includes('fetch') && e.includes('contents')), '空数组也不行');
+});
+
+test('before/after 可选;每边 1–3 条,4 条报错;支持双语对', () => {
+  const m = v2map();
+  m.nodes.db.before = [{ en: 'Manual exports', zh: '手动导表' }];
+  m.nodes.db.after = ['自动入库', '报表随时可查'];
+  assert.equal(validateAppMap(m).valid, true, JSON.stringify(validateAppMap(m).errors));
+  m.nodes.db.before = ['一', '二', '三', '四'];
+  assert.ok(validateAppMap(m).errors.some(e => e.includes('db') && e.includes('before')));
 });

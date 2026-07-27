@@ -12,7 +12,9 @@ export interface Strings {
   scen: string; pain: string; now: string;
   parts: string; layers: string; trades: string;
   ovHint: string;
-  impact: string; how: string; broke: string;
+  impact: string; costRisk: string; how: string; broke: string;
+  contentsTitle: string; beforeAfter: string; beforeLabel: string; afterLabel: string;
+  evidence: (n: number) => string;
   deps: string; needs: string; feeds: string; isStart: string; isEnd: string;
   code: (n: number) => string; codeTitle: string; noCode: string;
   trade: string; chose: string; over: string; cost: string; when: string;
@@ -35,7 +37,11 @@ export const STR: Record<Lang, Strings> = {
     scen: 'Business context', pain: 'The pain before', now: 'What it does now',
     parts: 'parts', layers: 'layers', trades: 'key tradeoffs',
     ovHint: 'Click any part on the canvas, or take the tour in data-flow order. Parts tagged "tradeoff" are where a real choice was made.',
-    impact: 'How this design affects you', how: 'How it works', broke: 'When it breaks: ',
+    impact: 'How this design affects you', costRisk: 'Cost and risk for you',
+    contentsTitle: "What's inside this part", beforeAfter: 'Before → After',
+    beforeLabel: 'Before', afterLabel: 'After',
+    evidence: (n) => `Source evidence (${n} lines)`,
+    how: 'How it works', broke: 'When it breaks: ',
     deps: 'Dependencies', needs: 'It needs', feeds: 'Waiting on it',
     isStart: 'nothing · it is the start', isEnd: 'nothing · it is the end',
     code: (n) => `Core code (${n} lines)`, codeTitle: 'Core code', noCode: 'No code here — this part is configured, not written.',
@@ -60,7 +66,11 @@ export const STR: Record<Lang, Strings> = {
     scen: '业务场景', pain: '当时的痛点', now: '现在它做什么',
     parts: '个零件', layers: '层结构', trades: '个关键取舍',
     ovHint: '点击画布上的任意零件，或按数据流顺序走一遍导览。带「取舍」标签的零件，是当初真正做过选择的地方。',
-    impact: '这样设计影响你什么', how: '它怎么工作', broke: '出问题时：',
+    impact: '这样设计影响你什么', costRisk: '你承担的成本与风险',
+    contentsTitle: '这一站里装着什么', beforeAfter: '前后对比',
+    beforeLabel: '没有它时', afterLabel: '有了它',
+    evidence: (n) => `原文证据（${n} 行）`,
+    how: '它怎么工作', broke: '出问题时：',
     deps: '依赖关系', needs: '它需要', feeds: '谁在等它',
     isStart: '没有 · 它是起点', isEnd: '没有 · 它是终点',
     code: (n) => `核心代码（${n} 行）`, codeTitle: '核心代码', noCode: '这一块没有代码——它是配置出来的，不是写出来的。',
