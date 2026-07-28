@@ -187,7 +187,7 @@ export function NodeInfo() {
 
   // 选词解释的三个状态:浮动按钮的位置、解释卡内容、"已复制"提示
   const [pick, setPick] = useState<{ text: string; x: number; y: number } | null>(null);
-  const [card, setCard] = useState<{ term: string; entry: GlossaryEntry | null } | null>(null);
+  const [card, setCard] = useState<{ term: string; entry: GlossaryEntry | null; loading?: boolean; live?: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => { if (ref.current) ref.current.scrollTop = 0; setPick(null); setCard(null); }, [selected]);
@@ -211,11 +211,34 @@ export function NodeInfo() {
     });
   };
 
-  const explain = () => {
+  // 三层瀑布:本地词典(免费)→ 本地服务实时解释(花你的额度)→ 复制成问题兜底
+  const explain = async () => {
     if (!pick) return;
-    setCard({ term: pick.text, entry: lookupGlossary(data, selected ?? '', pick.text) });
+    const term = pick.text;
     setPick(null);
     setCopied(false);
+    const entry = lookupGlossary(data, selected ?? '', term);
+    if (entry) { setCard({ term, entry }); return; }
+    setCard({ term, entry: null, loading: true });
+    try {
+      const node = selected ? data.nodes[selected] : null;
+      const r = await fetch('/api/explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          term,
+          nodeName: node ? L(node.name, lang) : '',
+          role: node ? L(node.role, lang) : '',
+          lang,
+        }),
+      });
+      if (r.ok) {
+        const j = await r.json();
+        setCard({ term, entry: { short: j.explanation }, live: true });
+        return;
+      }
+    } catch { /* 开发服务器没有 /api,或网络断了——落到兜底 */ }
+    setCard({ term, entry: null });
   };
 
   const copyQuestion = async () => {
@@ -245,11 +268,14 @@ export function NodeInfo() {
             <button className="ec-close" onClick={() => setCard(null)}>×</button>
           </div>
           <p className="ec-term">{card.term}</p>
-          {card.entry ? (
+          {card.loading ? (
+            <p className="ec-body dim">{s.liveLoading}</p>
+          ) : card.entry ? (
             <>
               <p className="ec-body">{L(card.entry.short, lang)}</p>
               {card.entry.detail ? <p className="ec-body dim">{L(card.entry.detail, lang)}</p> : null}
               {card.entry.example ? <p className="ec-body dim"><b>{s.glossExample}:</b>{L(card.entry.example, lang)}</p> : null}
+              {card.live ? <p className="ec-body dim" style={{ fontSize: 11 }}>{s.liveNote}</p> : null}
             </>
           ) : (
             <>

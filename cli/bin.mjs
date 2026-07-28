@@ -10,7 +10,7 @@ import { existsSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
-import { createHandler } from './server.mjs';
+import { createExplainer, createHandler } from './server.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const cwd = process.cwd();
@@ -32,8 +32,13 @@ if (!distDir) {
   process.exit(1);
 }
 
-// 3. 起服务:优先用 4870 端口,被占用就让系统随机分配一个空闲端口
-const server = http.createServer(createHandler(distDir, mapPath));
+// 3. 起服务:优先用 4870 端口,被占用就让系统随机分配一个空闲端口。
+// 实时解释的 key 只从环境变量读,只活在本进程内存里。
+const explainer = createExplainer({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  model: process.env.UE_EXPLAIN_MODEL || undefined,
+});
+const server = http.createServer(createHandler(distDir, mapPath, explainer));
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') server.listen(0, '127.0.0.1');
   else { process.stderr.write(`understand-everything: ${err.message}\n`); process.exit(1); }
@@ -43,6 +48,9 @@ server.listen(4870, '127.0.0.1', () => {
   process.stderr.write(
     `understand-everything ${url}\n` +
     (mapPath ? `  地图: ${mapPath}\n` : '  本项目还没有地图文件——先在 AI 工具里运行 /explain-my-app;现在展示示例项目。\n') +
+    (process.env.ANTHROPIC_API_KEY
+      ? '  实时解释: 已开启(会使用你的 API 额度)\n'
+      : '  实时解释: 未开启——启动前 export ANTHROPIC_API_KEY=... 即可;词典查询不受影响\n') +
     '  Ctrl+C 退出\n',
   );
   // 自动打开浏览器(打不开也不要紧,手动访问上面的地址即可)。--no-open 或 UE_NO_OPEN=1 则不弹。
