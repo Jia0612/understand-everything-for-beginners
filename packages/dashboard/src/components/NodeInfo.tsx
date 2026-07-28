@@ -187,7 +187,7 @@ export function NodeInfo() {
 
   // 选词解释的三个状态:浮动按钮的位置、解释卡内容、"已复制"提示
   const [pick, setPick] = useState<{ text: string; x: number; y: number } | null>(null);
-  const [card, setCard] = useState<{ term: string; entry: GlossaryEntry | null; loading?: boolean; live?: boolean } | null>(null);
+  const [card, setCard] = useState<{ term: string; entry: GlossaryEntry | null; loading?: boolean; live?: boolean; fail?: { error: string; detail?: string } } | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => { if (ref.current) ref.current.scrollTop = 0; setPick(null); setCard(null); }, [selected]);
@@ -237,8 +237,12 @@ export function NodeInfo() {
         setCard({ term, entry: { short: j.explanation }, live: true });
         return;
       }
-    } catch { /* 开发服务器没有 /api,或网络断了——落到兜底 */ }
-    setCard({ term, entry: null });
+      // 失败要说清原因:没配 key 和上游出错是两回事,不许再假装"词典没收录"
+      const j = await r.json().catch(() => ({ error: 'network' }));
+      setCard({ term, entry: null, fail: j });
+      return;
+    } catch { /* 开发服务器没有 /api,或网络断了 */ }
+    setCard({ term, entry: null, fail: { error: 'network' } });
   };
 
   const copyQuestion = async () => {
@@ -279,7 +283,11 @@ export function NodeInfo() {
             </>
           ) : (
             <>
-              <p className="ec-body dim">{s.glossMiss}</p>
+              <p className="ec-body dim">
+                {card.fail?.error === 'no-key' ? s.noKeyGuide
+                  : card.fail ? s.liveFail(card.fail.detail ?? card.fail.error)
+                  : s.glossMiss}
+              </p>
               <button className="btn-hl" onClick={copyQuestion}>{copied ? s.copied : s.copyQ}</button>
             </>
           )}

@@ -164,6 +164,8 @@ Web version with hosted analysis, accounts, Supabase persistence, languages beyo
 
 - **2026-07-27 (v2 content model, user-authored redesign)** §3 upgraded to `version: 2` (dashboard accepts both): new optional node fields `contents` (1–8, literal composition), `before`/`after` (1–3 each, evidence-graded: Observed/Inferred/Unknown, no absolutes); `impact` re-scoped to owner cost & risk only (0–2 items, UI title "Cost and risk for you / 你承担的成本与风险"); `code` renamed in UI to "Source evidence / 原文证据", 3–15 lines, collapsed. Planned next: node/global `glossary` + select-to-explain (local dictionary first, then CLI-proxied `/api/explain` with env-var keys — never localStorage).
 
+- **2026-07-28 (option X, user decision — supersedes env-only)** Live-explain keys: env vars still win, but keys may now be stored in a local vault `~/.understand-everything/keys.json` (dir 0700, file 0600); first interactive CLI run prompts once (paste key → provider auto-detected by prefix → saved); `--forget-keys` wipes the vault. Reliability: per-provider model-candidate fallback lists + cross-provider failover (all configured keys tried in order); failures surface named per provider/model in the explain card (no more silent 'not in dictionary'). Prompt upgraded to the three-part 核心意思/具体来说/打个比方 structure, max_tokens 700. Port-conflict warning added.
+
 ## 11. Working style for this session
 
 Explain consequential choices before implementing (feynman-explainer applies). When a decision could reasonably go two ways, present the options with what the user gains and gives up, and let them pick. Keep every explanation shorter than the code it explains.

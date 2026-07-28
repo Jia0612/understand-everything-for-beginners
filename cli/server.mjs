@@ -27,44 +27,53 @@ const MIME = {
 // 三家供应商的"门牌 + 暗号 + 回话格式"。加新供应商 = 在这张表里加一行。
 const PROVIDERS = {
   anthropic: {
-    defaultModel: 'claude-haiku-4-5-20251001',
+    // candidates = 模型备胎名单:首选被上游 404(下架/改名)就自动换下一个
+    candidates: ['claude-haiku-4-5-20251001', 'claude-haiku-4-5', 'claude-3-5-haiku-20241022'],
     request: (apiKey, model, prompt) => ({
       url: 'https://api.anthropic.com/v1/messages',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-      body: { model, max_tokens: 300, messages: [{ role: 'user', content: prompt }] },
+      body: { model, max_tokens: 700, messages: [{ role: 'user', content: prompt }] },
     }),
     extract: (data) => (data.content ?? []).filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim(),
   },
   openai: {
-    defaultModel: 'gpt-4o-mini',
+    candidates: ['gpt-4o-mini', 'gpt-4.1-mini', 'gpt-5-mini'],
     request: (apiKey, model, prompt) => ({
       url: 'https://api.openai.com/v1/chat/completions',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-      body: { model, max_tokens: 300, messages: [{ role: 'user', content: prompt }] },
+      body: { model, max_tokens: 700, messages: [{ role: 'user', content: prompt }] },
     }),
     extract: (data) => String(data.choices?.[0]?.message?.content ?? '').trim(),
   },
   gemini: {
-    defaultModel: 'gemini-2.0-flash',
+    candidates: ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'],
     request: (apiKey, model, prompt) => ({
       url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-      body: { contents: [{ parts: [{ text: prompt }] }] },
+      body: { contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 700 } },
     }),
     extract: (data) => (data.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? '').join('\n').trim(),
   },
 };
 
 export function createExplainer({
+  providers,
   apiKey,
-  provider = 'anthropic',
+  provider,
   model,
   fetchImpl = globalThis.fetch,
   timeoutMs = 20000,
 } = {}) {
-  const spec = PROVIDERS[provider];
-  if (!spec) throw new Error(`unknown provider "${provider}" — supported: ${Object.keys(PROVIDERS).join(', ')}`);
-  const useModel = model || spec.defaultModel;
+  // 供应商名单:新式传 providers 数组;旧式单 key 写法照常可用
+  const list = providers ?? ((provider !== undefined || apiKey !== undefined)
+    ? [{ provider: provider ?? 'anthropic', apiKey, model }]
+    : []);
+  for (const entry of list) {
+    if (!PROVIDERS[entry.provider]) {
+      throw new Error(`unknown provider "${entry.provider}" — supported: ${Object.keys(PROVIDERS).join(', ')}`);
+    }
+  }
+  const usable = list.filter((e) => e.apiKey);
   const cache = new Map();
 
   return async function explain(body) {
@@ -72,7 +81,7 @@ export function createExplainer({
     if (!term || term.length > 100) {
       return { status: 400, json: { error: 'bad-term', detail: 'term must be 1–100 characters' } };
     }
-    if (!apiKey) {
+    if (usable.length === 0) {
       return { status: 503, json: { error: 'no-key', detail: 'set ANTHROPIC_API_KEY, OPENAI_API_KEY or GEMINI_API_KEY before starting the CLI to enable live explanations' } };
     }
     const lang = body.lang === 'en' ? 'en' : 'zh';
@@ -81,34 +90,46 @@ export function createExplainer({
     const cacheKey = `${lang}|${nodeName}|${term}`;
     if (cache.has(cacheKey)) return { status: 200, json: cache.get(cacheKey) };
 
+    // 三段式提示词,对标"阅读器"体验:核心意思 / 具体来说 / 打个比方
     const prompt = lang === 'zh'
-      ? `你在给一位完全不懂技术的人解释软件地图里的一个词。当前部分:「${nodeName}」(${role})。请用大白话解释「${term}」在这个上下文里的意思,最多三句话,不用任何未解释的术语,不要客套开场。`
-      : `You are explaining a term on a software map to someone with zero technical background. Current part: "${nodeName}" (${role}). In plain language, explain what "${term}" means in this context — at most three sentences, no unexplained jargon, no preamble.`;
+      ? `你在给一位完全不懂技术的人解释软件地图里的一个词。当前部分:「${nodeName}」(${role})。\n请用大白话解释「${term}」在这个上下文里的意思,按下面三段输出(纯文本,不用任何markdown符号,不要客套开场):\n核心意思:(一句话说透)\n具体来说:(两三句展开,任何术语当场用括号解释)\n打个比方:(一个贴合本场景、经得起追问的生活类比;实在没有贴切的就写"这个概念很直白,不需要比方")`
+      : `You are explaining a term on a software map to someone with zero technical background. Current part: "${nodeName}" (${role}).\nExplain what "${term}" means in this context, in exactly three labeled parts (plain text, no markdown, no preamble):\n核心意思 Core idea: (one sentence that nails it)\n具体来说 Concretely: (2–3 sentences, define any jargon in parentheses)\n打个比方 Analogy: (one everyday comparison that fits THIS context and survives a follow-up; if none fits, say the concept is plain enough not to need one)`;
 
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const { url, headers, body: reqBody } = spec.request(apiKey, useModel, prompt);
-      const resp = await fetchImpl(url, {
-        method: 'POST',
-        signal: controller.signal,
-        headers,
-        body: JSON.stringify(reqBody),
-      });
-      if (!resp.ok) {
-        return { status: 502, json: { error: 'provider', detail: `upstream status ${resp.status}` } };
+    // 两级备胎:模型名单内轮换(404/400 多为模型下架),供应商之间再轮换
+    const failures = [];
+    for (const entry of usable) {
+      const spec = PROVIDERS[entry.provider];
+      const models = entry.model ? [entry.model] : spec.candidates;
+      for (const m of models) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const { url, headers, body: reqBody } = spec.request(entry.apiKey, m, prompt);
+          const resp = await fetchImpl(url, {
+            method: 'POST', signal: controller.signal, headers, body: JSON.stringify(reqBody),
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            const text = spec.extract(data);
+            if (text) {
+              const json = { explanation: text, provider: entry.provider };
+              cache.set(cacheKey, json);
+              return { status: 200, json };
+            }
+            failures.push(`${entry.provider}: empty response (${m})`);
+          } else {
+            failures.push(`${entry.provider}: status ${resp.status} (${m})`);
+            // 401/403 = key 本身不对,换模型也没用,直接换下一家
+            if (resp.status === 401 || resp.status === 403) break;
+          }
+        } catch (e) {
+          failures.push(`${entry.provider}: ${e.name === 'AbortError' ? 'timeout' : 'network error'} (${m})`);
+        } finally {
+          clearTimeout(timer);
+        }
       }
-      const data = await resp.json();
-      const text = spec.extract(data);
-      if (!text) return { status: 502, json: { error: 'provider', detail: 'empty response' } };
-      const json = { explanation: text };
-      cache.set(cacheKey, json);
-      return { status: 200, json };
-    } catch (e) {
-      return { status: 502, json: { error: 'provider', detail: e.name === 'AbortError' ? 'timeout' : 'network error' } };
-    } finally {
-      clearTimeout(timer);
     }
+    return { status: 502, json: { error: 'provider', detail: failures.join('; ') } };
   };
 }
 

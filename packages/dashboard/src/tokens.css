@@ -289,3 +289,5 @@ aside{position:relative}
 .ev-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:5px}
 .ev-title{font-size:12px;font-weight:600;color:var(--text-1)}
 .ev-src{font-family:var(--font-mono);font-size:10px;color:var(--text-3);background:var(--elevated);border:1px solid var(--border-subtle);border-radius:5px;padding:1px 6px;white-space:nowrap}
+/* 三段式解释按段落显示(核心意思/具体来说/打个比方各占一段) */
+.ec-body{white-space:pre-line}

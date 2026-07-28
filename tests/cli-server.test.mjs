@@ -163,3 +163,76 @@ test('Gemini key:请求发向 Google 的门,key 走请求头,回复能解析成�
 test('不认识的供应商名:启动即报错,而不是跑到一半才炸', () => {
   assert.throws(() => createExplainer({ apiKey: 'k', provider: 'aliens' }), /provider/);
 });
+
+// ---- 2026-07-28 用户拍板 X 方案:两级备胎 + key 保险柜 ----
+import { loadKeys, saveKey, detectProvider, KEYS_FILE_MODE } from '../cli/keys.mjs';
+import { statSync } from 'node:fs';
+
+test('模型备胎:首选模型被上游 404,自动换下一个模型重试成功', async () => {
+  const tried = [];
+  const fakeFetch = async (url, opts) => {
+    const model = JSON.parse(opts.body).model ?? url.match(/models\/([^:]+)/)?.[1];
+    tried.push(model);
+    if (tried.length === 1) return { ok: false, status: 404, json: async () => ({}) };
+    return { ok: true, status: 200, json: async () => ({ content: [{ type: 'text', text: '备胎成功' }] }) };
+  };
+  const explain = createExplainer({ providers: [{ provider: 'anthropic', apiKey: 'k' }], fetchImpl: fakeFetch });
+  const r = await explain({ term: 'API', nodeName: 'n', role: 'r', lang: 'zh' });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.ok(tried.length >= 2, '404 后必须换模型再试');
+  assert.notEqual(tried[0], tried[1], '重试必须换不同的模型');
+});
+
+test('供应商备胎:Gemini 全军覆没时自动改走 OpenAI;失败详情里两家都有名字', async () => {
+  const fakeFetch = async (url) => {
+    if (url.includes('googleapis')) return { ok: false, status: 404, json: async () => ({}) };
+    return { ok: true, status: 200, json: async () => ({ choices: [{ message: { content: 'OpenAI 顶上' } }] }) };
+  };
+  const explain = createExplainer({
+    providers: [{ provider: 'gemini', apiKey: 'g' }, { provider: 'openai', apiKey: 'o' }],
+    fetchImpl: fakeFetch,
+  });
+  const r = await explain({ term: 'API', nodeName: 'n', role: 'r', lang: 'zh' });
+  assert.equal(r.status, 200);
+  assert.ok(r.json.explanation.includes('OpenAI 顶上'));
+
+  // 两家全挂:错误详情必须点名每一家,不许哑火
+  const allFail = createExplainer({
+    providers: [{ provider: 'gemini', apiKey: 'g' }, { provider: 'openai', apiKey: 'o' }],
+    fetchImpl: async () => ({ ok: false, status: 500, json: async () => ({}) }),
+  });
+  const bad = await allFail({ term: 'API', nodeName: 'n', role: 'r', lang: 'zh' });
+  assert.equal(bad.status, 502);
+  assert.ok(bad.json.detail.includes('gemini') && bad.json.detail.includes('openai'), `详情要点名两家,实际: ${bad.json.detail}`);
+});
+
+test('解释提示词是三段式(核心意思/具体来说/打个比方),对标阅读器体验', async () => {
+  let prompt = '';
+  const fakeFetch = async (url, opts) => {
+    prompt = JSON.parse(opts.body).messages?.[0]?.content ?? '';
+    return { ok: true, status: 200, json: async () => ({ content: [{ type: 'text', text: 'ok' }] }) };
+  };
+  await createExplainer({ providers: [{ provider: 'anthropic', apiKey: 'k' }], fetchImpl: fakeFetch })({ term: 'RAG', nodeName: 'n', role: 'r', lang: 'zh' });
+  for (const label of ['核心意思', '具体来说', '打个比方']) {
+    assert.ok(prompt.includes(label), `提示词缺少「${label}」段落要求`);
+  }
+});
+
+test('key 保险柜:存进去权限锁死(仅本人可读写),读出来环境变量优先于柜子', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ue-keys-'));
+  const file = join(dir, 'keys.json');
+  saveKey('gemini', 'AIza-fake-1', file);
+  const mode = statSync(file).mode & 0o777;
+  assert.equal(mode, KEYS_FILE_MODE, `文件权限应为 0${KEYS_FILE_MODE.toString(8)},实际 0${mode.toString(8)}`);
+  const fromFile = loadKeys({}, file);
+  assert.equal(fromFile.gemini, 'AIza-fake-1');
+  const envWins = loadKeys({ GEMINI_API_KEY: 'AIza-env-2' }, file);
+  assert.equal(envWins.gemini, 'AIza-env-2', '环境变量必须压过柜子里的');
+});
+
+test('凭 key 的长相认供应商:sk-ant → Claude,AIza → Gemini,sk- → OpenAI,认不出返回 null', () => {
+  assert.equal(detectProvider('sk-ant-abc123'), 'anthropic');
+  assert.equal(detectProvider('AIzaSyFake'), 'gemini');
+  assert.equal(detectProvider('sk-proj-abc'), 'openai');
+  assert.equal(detectProvider('whatever'), null);
+});

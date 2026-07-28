@@ -18,6 +18,7 @@ export interface Strings {
   explain: string; glossTitle: string; glossExample: string;
   glossMiss: string; copyQ: string; copied: string;
   liveLoading: string; liveNote: string;
+  noKeyGuide: string; liveFail: (detail: string) => string;
   deps: string; needs: string; feeds: string; isStart: string; isEnd: string;
   code: (n: number) => string; codeTitle: string; noCode: string;
   trade: string; chose: string; over: string; cost: string; when: string;
@@ -48,6 +49,8 @@ export const STR: Record<Lang, Strings> = {
     glossMiss: "Not in this map's dictionary yet. For now, copy it as a question and ask your AI:",
     copyQ: 'Copy as a question', copied: 'Copied — paste it to your AI',
     liveLoading: 'Asking your AI…', liveNote: 'Generated live — this used your API quota.',
+    noKeyGuide: 'Live explain is not set up yet. Restart the dashboard in your terminal — it will ask for an API key once, and one paste enables it forever. Meanwhile:',
+    liveFail: (detail) => `Live explain failed this time (${detail}). Meanwhile:`,
     how: 'How it works', broke: 'When it breaks: ',
     deps: 'Dependencies', needs: 'It needs', feeds: 'Waiting on it',
     isStart: 'nothing · it is the start', isEnd: 'nothing · it is the end',
@@ -81,6 +84,8 @@ export const STR: Record<Lang, Strings> = {
     glossMiss: '本地词典还没收录这个词。先复制成问题,去问你的 AI:',
     copyQ: '复制成问题', copied: '已复制,去贴给你的 AI 吧',
     liveLoading: '正在请 AI 解释…', liveNote: '实时生成——这次用了你的 API 额度。',
+    noKeyGuide: '实时解释还没开启:去终端里重启一次仪表盘,它会问你要一次 key,贴一次永久生效。眼下可以:',
+    liveFail: (detail) => `实时解释这次失败了(${detail})。眼下可以:`,
     how: '它怎么工作', broke: '出问题时：',
     deps: '依赖关系', needs: '它需要', feeds: '谁在等它',
     isStart: '没有 · 它是起点', isEnd: '没有 · 它是终点',
