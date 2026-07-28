@@ -65,7 +65,13 @@ export const useStore = create<State>((set, get) => ({
   })),
 
   wake: () => set({ intro: false }),
-  selectNode: (id) => set({ selected: id, intro: false }),
+  // 2026-07-27 用户报的 bug:导览开着时点零件,顶栏站数不跟着跳。
+  // 修法:选中谁,导览就同步跳到谁那一站(chain 位置 + 1;第 0 站是总览)。
+  selectNode: (id) => set((s) => ({
+    selected: id,
+    intro: false,
+    ...(s.tourOn ? { tourIdx: s.data.chain.indexOf(id) + 1 } : {}),
+  })),
   toggleHl: () => set((s) => ({ hlActive: !s.hlActive })),
   setSearch: (search) => set({ search, intro: false }),
 
