@@ -129,3 +129,37 @@ test('/api/explain:空词、超过 100 字的词都返回 400,不浪费一次调
   assert.equal((await postExplain(handler, { term: 'x'.repeat(101), lang: 'zh' })).status, 400);
   assert.equal(calls, 0, '非法输入不许碰供应商');
 });
+
+// ---- 2026-07-27 追加:OpenAI / Gemini 供应商支持(同一个解释器,换插头) ----
+
+test('OpenAI key:请求发向 OpenAI 的门,带 Bearer 暗号,回复能解析成解释', async () => {
+  let seenUrl = '', seenAuth = '';
+  const fakeFetch = async (url, opts) => {
+    seenUrl = url; seenAuth = opts.headers['Authorization'] ?? '';
+    return { ok: true, status: 200, json: async () => ({ choices: [{ message: { content: 'OpenAI 的假解释' } }] }) };
+  };
+  const explain = createExplainer({ apiKey: 'sk-openai-test', provider: 'openai', fetchImpl: fakeFetch });
+  const r = await explain({ term: 'API', nodeName: 'n', role: 'r', lang: 'zh' });
+  assert.equal(r.status, 200);
+  assert.ok(r.json.explanation.includes('OpenAI 的假解释'));
+  assert.ok(seenUrl.includes('api.openai.com'), `URL 应指向 OpenAI,实际 ${seenUrl}`);
+  assert.ok(seenAuth.startsWith('Bearer '), 'OpenAI 用 Bearer 暗号');
+});
+
+test('Gemini key:请求发向 Google 的门,key 走请求头,回复能解析成解释', async () => {
+  let seenUrl = '', seenKeyHeader = '';
+  const fakeFetch = async (url, opts) => {
+    seenUrl = url; seenKeyHeader = opts.headers['x-goog-api-key'] ?? '';
+    return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'Gemini 的假解释' }] } }] }) };
+  };
+  const explain = createExplainer({ apiKey: 'gm-test', provider: 'gemini', fetchImpl: fakeFetch });
+  const r = await explain({ term: 'API', nodeName: 'n', role: 'r', lang: 'zh' });
+  assert.equal(r.status, 200);
+  assert.ok(r.json.explanation.includes('Gemini 的假解释'));
+  assert.ok(seenUrl.includes('generativelanguage.googleapis.com'), `URL 应指向 Google,实际 ${seenUrl}`);
+  assert.equal(seenKeyHeader, 'gm-test', 'Gemini 的 key 走 x-goog-api-key 请求头,不进网址');
+});
+
+test('不认识的供应商名:启动即报错,而不是跑到一半才炸', () => {
+  assert.throws(() => createExplainer({ apiKey: 'k', provider: 'aliens' }), /provider/);
+});

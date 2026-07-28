@@ -33,9 +33,22 @@ if (!distDir) {
 }
 
 // 3. 起服务:优先用 4870 端口,被占用就让系统随机分配一个空闲端口。
-// 实时解释的 key 只从环境变量读,只活在本进程内存里。
+// 实时解释:配了哪家的 key 就用哪家(多家都配时按下表顺序取第一家;
+// UE_EXPLAIN_PROVIDER=anthropic|openai|gemini 可强行指定)。
+// key 只从环境变量读,只活在本进程内存里。
+const PROVIDER_KEYS = [
+  ['anthropic', process.env.ANTHROPIC_API_KEY],
+  ['openai', process.env.OPENAI_API_KEY],
+  ['gemini', process.env.GEMINI_API_KEY],
+];
+const forced = process.env.UE_EXPLAIN_PROVIDER;
+const picked = forced
+  ? PROVIDER_KEYS.find(([name]) => name === forced)
+  : PROVIDER_KEYS.find(([, key]) => key);
+const [providerName, providerKey] = picked ?? ['anthropic', undefined];
 const explainer = createExplainer({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+  apiKey: providerKey,
+  provider: providerName,
   model: process.env.UE_EXPLAIN_MODEL || undefined,
 });
 const server = http.createServer(createHandler(distDir, mapPath, explainer));
@@ -48,9 +61,9 @@ server.listen(4870, '127.0.0.1', () => {
   process.stderr.write(
     `understand-everything ${url}\n` +
     (mapPath ? `  地图: ${mapPath}\n` : '  本项目还没有地图文件——先在 AI 工具里运行 /explain-my-app;现在展示示例项目。\n') +
-    (process.env.ANTHROPIC_API_KEY
-      ? '  实时解释: 已开启(会使用你的 API 额度)\n'
-      : '  实时解释: 未开启——启动前 export ANTHROPIC_API_KEY=... 即可;词典查询不受影响\n') +
+    (providerKey
+      ? `  实时解释: 已开启(供应商: ${providerName},会使用你的 API 额度)\n`
+      : '  实时解释: 未开启——启动前 export ANTHROPIC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY 任一即可;词典查询不受影响\n') +
     '  Ctrl+C 退出\n',
   );
   // 自动打开浏览器(打不开也不要紧,手动访问上面的地址即可)。--no-open 或 UE_NO_OPEN=1 则不弹。

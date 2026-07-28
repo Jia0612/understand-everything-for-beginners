@@ -24,12 +24,47 @@ const MIME = {
  * 相同问题在内存里缓存,同一个词第二次点不再花钱。
  * 返回 async (body) => { status, json },由 /api/explain 路由调用。
  */
+// 三家供应商的"门牌 + 暗号 + 回话格式"。加新供应商 = 在这张表里加一行。
+const PROVIDERS = {
+  anthropic: {
+    defaultModel: 'claude-haiku-4-5-20251001',
+    request: (apiKey, model, prompt) => ({
+      url: 'https://api.anthropic.com/v1/messages',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: { model, max_tokens: 300, messages: [{ role: 'user', content: prompt }] },
+    }),
+    extract: (data) => (data.content ?? []).filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim(),
+  },
+  openai: {
+    defaultModel: 'gpt-4o-mini',
+    request: (apiKey, model, prompt) => ({
+      url: 'https://api.openai.com/v1/chat/completions',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: { model, max_tokens: 300, messages: [{ role: 'user', content: prompt }] },
+    }),
+    extract: (data) => String(data.choices?.[0]?.message?.content ?? '').trim(),
+  },
+  gemini: {
+    defaultModel: 'gemini-2.0-flash',
+    request: (apiKey, model, prompt) => ({
+      url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      body: { contents: [{ parts: [{ text: prompt }] }] },
+    }),
+    extract: (data) => (data.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? '').join('\n').trim(),
+  },
+};
+
 export function createExplainer({
   apiKey,
-  model = 'claude-haiku-4-5-20251001',
+  provider = 'anthropic',
+  model,
   fetchImpl = globalThis.fetch,
   timeoutMs = 20000,
 } = {}) {
+  const spec = PROVIDERS[provider];
+  if (!spec) throw new Error(`unknown provider "${provider}" — supported: ${Object.keys(PROVIDERS).join(', ')}`);
+  const useModel = model || spec.defaultModel;
   const cache = new Map();
 
   return async function explain(body) {
@@ -38,7 +73,7 @@ export function createExplainer({
       return { status: 400, json: { error: 'bad-term', detail: 'term must be 1–100 characters' } };
     }
     if (!apiKey) {
-      return { status: 503, json: { error: 'no-key', detail: 'start the CLI with ANTHROPIC_API_KEY set to enable live explanations' } };
+      return { status: 503, json: { error: 'no-key', detail: 'set ANTHROPIC_API_KEY, OPENAI_API_KEY or GEMINI_API_KEY before starting the CLI to enable live explanations' } };
     }
     const lang = body.lang === 'en' ? 'en' : 'zh';
     const nodeName = String(body.nodeName ?? '').slice(0, 200);
@@ -53,25 +88,18 @@ export function createExplainer({
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const resp = await fetchImpl('https://api.anthropic.com/v1/messages', {
+      const { url, headers, body: reqBody } = spec.request(apiKey, useModel, prompt);
+      const resp = await fetchImpl(url, {
         method: 'POST',
         signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: 300,
-          messages: [{ role: 'user', content: prompt }],
-        }),
+        headers,
+        body: JSON.stringify(reqBody),
       });
       if (!resp.ok) {
         return { status: 502, json: { error: 'provider', detail: `upstream status ${resp.status}` } };
       }
       const data = await resp.json();
-      const text = (data.content ?? []).filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
+      const text = spec.extract(data);
       if (!text) return { status: 502, json: { error: 'provider', detail: 'empty response' } };
       const json = { explanation: text };
       cache.set(cacheKey, json);

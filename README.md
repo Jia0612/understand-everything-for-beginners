@@ -35,6 +35,16 @@ In any project that already has `.ue/app-map.json`:
 npx understand-everything
 ```
 
+### Live "explain this word" (optional)
+
+Select any word on the dashboard and hit Explain. Terms in the map's built-in dictionary are answered free and offline. For everything else, set ONE of these before starting the CLI and a cheap model explains it live (uses your API quota; the key stays in your terminal's environment — it never reaches the browser or disk):
+
+```bash
+export ANTHROPIC_API_KEY=...   # or OPENAI_API_KEY=... / GEMINI_API_KEY=...
+```
+
+Force a provider with `UE_EXPLAIN_PROVIDER=anthropic|openai|gemini`; override the model with `UE_EXPLAIN_MODEL=...`.
+
 ## 中文速览
 
 把 vibe code 出来的项目变成一张能点的「人话地图」:每个零件讲清它干什么、为什么选它、代价是什么、什么时候该换。分析由你已在用的 AI 编程工具完成,不烧额外 API。装好后在项目里说一句 `/explain-my-app`(Codex 里是 `$explain-my-app`)即可。
