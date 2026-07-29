@@ -9,7 +9,7 @@ import { validateAppMap, generateWithRetry } from '../packages/core/src/index.js
 import { validateAppMap as pluginValidate } from '../plugin/skills/explain-my-app/validate-schema.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const good = () => JSON.parse(readFileSync(join(__dirname, '../docs/app-map.example.json'), 'utf-8'));
+const good = () => JSON.parse(readFileSync(join(__dirname, './fixtures/app-map.v1-en.json'), 'utf-8'));
 const goodBilingual = () => JSON.parse(readFileSync(join(__dirname, '../docs/app-map.m1-codebase-to-course.json'), 'utf-8'));
 
 test('zod 版校验:单语示例和双语示例都必须通过', () => {

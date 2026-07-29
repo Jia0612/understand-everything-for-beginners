@@ -10,7 +10,7 @@ import { nodePos, edgePath, canvasWidth, NODE_W, LANE_Y } from '../packages/dash
 import { chooseData } from '../packages/dashboard/src/lib/chooseData.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const demo = () => JSON.parse(readFileSync(join(__dirname, '../docs/app-map.example.json'), 'utf-8'));
+const demo = () => JSON.parse(readFileSync(join(__dirname, './fixtures/app-map.v1-en.json'), 'utf-8'));
 
 // 造一张 n 个零件的合成地图(轮流分配三条泳道),用于测排版
 function syntheticMap(n) {

@@ -11,7 +11,7 @@ import { validateAppMap } from '../plugin/skills/explain-my-app/validate-schema.
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(__dirname, '../plugin/skills/explain-my-app/validate-schema.mjs');
-const EXAMPLE = join(__dirname, '../docs/app-map.example.json');
+const EXAMPLE = join(__dirname, './fixtures/app-map.v1-en.json');
 
 // 深拷贝示例数据,供各测试改坏
 const good = () => JSON.parse(readFileSync(EXAMPLE, 'utf-8'));

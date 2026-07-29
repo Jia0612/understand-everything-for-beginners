@@ -12,7 +12,7 @@ import { validateAppMap } from '../plugin/skills/explain-my-app/validate-schema.
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(__dirname, '../plugin/skills/explain-my-app/diff-app-map.mjs');
-const EXAMPLE = join(__dirname, '../docs/app-map.example.json');
+const EXAMPLE = join(__dirname, './fixtures/app-map.v1-en.json');
 const load = () => JSON.parse(readFileSync(EXAMPLE, 'utf-8'));
 
 test('内容一字未变:changed 和 affected 都为空', () => {

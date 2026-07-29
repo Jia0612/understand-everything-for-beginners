@@ -1,11 +1,23 @@
 {
   "version": 1,
-  "language": "en",
+  "language": "both",
   "project": {
-    "name": "Ad Data Ingestion Pipeline",
-    "scenario": "The marketing team runs ads on 10+ media platforms and tunes budgets daily on spend, CTR, and CPA — the fresher the numbers, the better the calls.",
-    "pain": "Data was pulled by hand from each platform's console and stitched into spreadsheets: 10+ hours a week, and at best day-old numbers — always making today's decisions on yesterday's data.",
-    "now": "Every hour, the app pulls numbers from every ad platform, makes the field names match, keeps repeat records from being counted twice, and saves the clean result in a database. The team checks a dashboard themselves — manual exports no longer exist."
+    "name": {
+      "en": "Ad Data Ingestion Pipeline",
+      "zh": "广告数据自动采集管道"
+    },
+    "scenario": {
+      "en": "The marketing team runs ads on 10+ media platforms and tunes budgets daily on spend, CTR, and CPA — the fresher the numbers, the better the calls.",
+      "zh": "市场团队在 10+ 个媒体平台投广告，每天要盯着 spend、CTR、CPA 调预算——数字越新鲜，预算调得越准。"
+    },
+    "pain": {
+      "en": "Data was pulled by hand from each platform's console and stitched into spreadsheets: 10+ hours a week, and at best day-old numbers — always making today's decisions on yesterday's data.",
+      "zh": "数据靠人工从各平台后台导出、再拼进表格：每周吃掉 10+ 小时，而且最快只有「天级」新鲜度——市场团队永远在用昨天的数字做今天的决定。"
+    },
+    "now": {
+      "en": "Every hour the pipeline pulls from all platforms, normalizes and dedupes the data, and stores it in a database. The team self-serves on a BI dashboard — manual exports no longer exist.",
+      "zh": "每小时自动从各平台抓数据，统一格式、去重后存进数据库，市场团队在 BI 大屏上自助看数。人工导表这件事从此不存在。"
+    }
   },
   "chain": [
     "scheduler",
@@ -24,33 +36,63 @@
       "feeds": [
         "fetch"
       ],
-      "name": "Scheduler",
-      "role": "Kicks off an ad-data pull every hour, on the hour — no human needed.",
+      "name": {
+        "en": "Scheduler",
+        "zh": "Scheduler"
+      },
+      "role": {
+        "en": "Kicks off an ad-data pull every hour, on the hour — no human needed.",
+        "zh": "每小时整点自动启动一次广告数据抓取——不需要任何人手动跑。"
+      },
       "impact": [
-        "Data freshness went from daily to hourly; the numbers the team sees are at most an hour old.",
-        "No one runs scripts by hand anymore — that is where the 10+ saved hours a week come from."
+        {
+          "en": "Data freshness went from daily to hourly; the numbers the team sees are at most an hour old.",
+          "zh": "数据从「每天更新」变成「每小时更新」，市场团队看到的数字最多滞后一小时。"
+        },
+        {
+          "en": "No one runs scripts by hand anymore — that is where the 10+ saved hours a week come from.",
+          "zh": "不用再有人手动跑脚本，每周省下的 10+ 小时就在这里。"
+        }
       ],
-      "how": "On the hour, AWS wakes a small piece of code that does exactly one thing: tell the Fetch Layer to start pulling numbers. Then it sleeps until the next hour.",
-      "fail": "If one run fails, that hour's data has a gap; the next run fires as usual — nothing cascades.",
+      "how": {
+        "en": "On the hour, AWS wakes a small piece of code that does exactly one thing: tell the Fetch Layer to start pulling. Then it sleeps until the next hour.",
+        "zh": "到整点，AWS 自动唤醒一段代码，它只做一件事：通知 Fetch Layer 开始抓数据。做完就停，等下一个整点。"
+      },
+      "fail": {
+        "en": "If one run fails, that hour's data has a gap; the next run fires as usual — nothing cascades.",
+        "zh": "某一次定时任务失败，这一小时的数据会缺一格；下个整点照常再跑，不会连锁挂掉。"
+      },
       "code": [
         {
           "c": "# serverless.yml\nfunctions:\n  ingest:\n    handler: src/ingest.run",
-          "n": "Tells AWS: when there is work, run the function src/ingest.run.",
+          "n": {
+            "en": "Tells AWS: when there is work, run the function src/ingest.run.",
+            "zh": "告诉 AWS：「有活儿的时候，去跑 src/ingest.run 这个函数。」"
+          },
           "risk": null
         },
         {
           "c": "    events:\n      - schedule: cron(0 * * * ? *)",
-          "n": "This line is the timer itself. cron(0 * * * ? *) means: fire at minute 0 of every hour.",
+          "n": {
+            "en": "This line is the timer itself. cron(0 * * * ? *) means: fire at minute 0 of every hour.",
+            "zh": "这一行就是定时器本体。cron(0 * * * ? *) 的意思是：每小时的第 0 分钟触发一次。"
+          },
           "risk": null
         },
         {
           "c": "// src/ingest.ts\nexport const run = async () => pipeline.start();",
-          "n": "The only thing it does when woken: start the pipeline.",
+          "n": {
+            "en": "The only thing it does when woken: start the pipeline.",
+            "zh": "被唤醒之后做的唯一一件事：启动整条管道。"
+          },
           "risk": null
         }
       ],
       "tradeoff": null,
-      "tourHint": "Stop 1 · Starts the hourly pull — this is why the dashboard is never more than about an hour behind."
+      "tourHint": {
+        "en": "Stop 1 · Starts the whole pipeline every hour — hourly freshness is decided right here.",
+        "zh": "第 1 站 · 每小时定时启动整条管道，「每小时更新」就是它定的。"
+      }
     },
     "fetch": {
       "lane": "be",
@@ -62,34 +104,79 @@
       "feeds": [
         "normalize"
       ],
-      "name": "Fetch Layer",
-      "role": "Pulls raw ad data from 10+ media platforms.",
+      "name": {
+        "en": "Fetch Layer",
+        "zh": "Fetch Layer"
+      },
+      "role": {
+        "en": "Pulls raw ad data from 10+ media platforms.",
+        "zh": "去 10+ 个媒体平台抓原始广告数据。"
+      },
       "impact": [
-        "10+ platforms, each with its own way of sharing data — this is the part most likely to need future fixes.",
-        "If one platform changes its API, only that platform's connector breaks; the rest keep running.",
-        "Adding a new platform means adding one new connector that follows the same pattern — the rest of the app stays put."
+        {
+          "en": "10+ platforms, each with its own way of connecting — the most maintenance-heavy part of the project.",
+          "zh": "要对接 10+ 个平台，每家的对接方式都不同——这里是全项目最费维护的地方。"
+        },
+        {
+          "en": "If one platform changes its API, only that plugin breaks; the rest keep running.",
+          "zh": "某个平台改了 API，只坏那一个插件，其余照常跑，故障被隔离住了。"
+        },
+        {
+          "en": "Adding a new platform means writing one new plugin from the template — nothing else changes.",
+          "zh": "以后想加新平台，照模板再写一个插件就行，别处一行不用改。"
+        }
       ],
-      "how": "There is one small connector per platform. Each connector gives the rest of the app the same kind of answer, even though TikTok, Google, and Meta all make you ask differently. An API is simply an agreed way for two programs to talk.",
-      "fail": "If a platform's API is down or changed, only that platform's data is missing; the rest keep running, and the gap is backfilled next round.",
+      "how": {
+        "en": "One small plugin per platform, all the same shape: a single getData(params) interface (an API is simply an agreed way for two programs to talk). When the Scheduler fires, every plugin pulls from its own platform.",
+        "zh": "每个媒体平台一个小插件，结构完全一样：对外只有一个 getData(params) 接口（API 就是两个程序之间约定好的对话方式）。Scheduler 一触发，所有插件各自去自己的平台拉原始数据。"
+      },
+      "fail": {
+        "en": "If a platform's API is down or changed, only that platform's data is missing; the rest keep running, and the gap is backfilled next round.",
+        "zh": "某个平台的 API 挂了或改版，只有那一家的数据缺失，其余插件照常跑；缺的部分下一轮补抓。"
+      },
       "code": [
         {
           "c": "// plugins/tiktok.ts\nexport const tiktok: MediaPlugin = {\n  name: \"tiktok\",",
-          "n": "One file like this per platform — it registers who it is.",
+          "n": {
+            "en": "One file like this per platform — it registers who it is.",
+            "zh": "每个平台一个这样的文件，先登记自己是谁。"
+          },
           "risk": null
         },
         {
           "c": "  async getData(params) {\n    const res = await fetch(API_URL, { headers: auth() });\n    return res.json();\n  },\n};",
-          "n": "Every connector has the same getData function, so the rest of the app can ask every platform the same way.",
-          "risk": "⚠ This line makes a real API call and uses part of that platform's allowed call budget. Redis slows calls down so the platform does not block you."
+          "n": {
+            "en": "Every plugin implements the same getData — the rest of the code never cares how differently TikTok and Google behave.",
+            "zh": "所有插件都实现同一个 getData——外面的代码不用关心 TikTok 和 Google 的取法有多不一样。"
+          },
+          "risk": {
+            "en": "⚠ This line makes a real API call and spends your quota on that platform. The rate limiter at the Redis stop exists for this line.",
+            "zh": "⚠ 这一行会真实调用平台 API，消耗你在该平台的调用额度。Redis 那一站的限速就是为它准备的。"
+          }
         }
       ],
       "tradeoff": {
-        "a": "one hand-written connector per platform",
-        "b": "official SDKs per platform",
-        "cost": "Every platform's quirks are yours to maintain; when a platform changes, you patch that connector.",
-        "when": "With only 2-3 major platforms and stable SDKs, SDKs are less work. With 10+ platforms that all need to feed the same dashboard, one connector pattern is easier to control."
+        "a": {
+          "en": "hand-written adaptors (plugins)",
+          "zh": "自己写 adaptor（插件）"
+        },
+        "b": {
+          "en": "official SDKs per platform",
+          "zh": "用各平台官方 SDK"
+        },
+        "cost": {
+          "en": "Every platform's integration details are yours to maintain; when a platform changes, you patch.",
+          "zh": "每个平台的对接细节都得自己维护，平台改版就得跟着修。"
+        },
+        "when": {
+          "en": "With only 2-3 major platforms and stable SDKs, SDKs are less work. With 10+ platforms and one unified interface, adaptors win — the case here.",
+          "zh": "如果只接 2-3 个大平台、官方 SDK 又稳定，直接用 SDK 更省事。平台一多、接口要统一，adaptor 才划算——现在是 10+ 个平台，所以选它。"
+        }
       },
-      "tourHint": "Stop 2 · Pulls raw numbers from 10+ platforms — this is the part most likely to need upkeep."
+      "tourHint": {
+        "en": "Stop 2 · Pulls raw data from 10+ platforms — the most maintenance-heavy part.",
+        "zh": "第 2 站 · 从 10+ 个平台抓原始数据，全项目最费维护的地方。"
+      }
     },
     "normalize": {
       "lane": "be",
@@ -101,28 +188,55 @@
       "feeds": [
         "redis"
       ],
-      "name": "Field-name cleaner",
-      "role": "Turns each platform's differently named fields into one shared format.",
+      "name": {
+        "en": "Normalize Layer",
+        "zh": "Normalize Layer"
+      },
+      "role": {
+        "en": "Unifies each platform's differently-named fields into one standard JSON format.",
+        "zh": "把各平台叫法不一的字段统一成一套标准 JSON 格式。"
+      },
       "impact": [
-        "\"Impressions\" on the dashboard always means one thing, whichever platform the data came from.",
-        "When a new platform uses odd field names, the fix stays here — the later parts do not need to move."
+        {
+          "en": "\"Impressions\" on the dashboard always means one thing, whichever platform the data came from.",
+          "zh": "Dashboard 上的「impressions」永远只有一个意思，不管数据来自哪个平台。"
+        },
+        {
+          "en": "However odd a new platform's fields are, changes stay inside this layer — nothing downstream moves.",
+          "zh": "新平台的字段再古怪，改动也只发生在这一层，下游全都不用动。"
+        }
       ],
-      "how": "Platforms name the same metric differently: some say views, some say impressions. This layer renames fields against one mapping table, then passes the data on.",
-      "fail": "A field missing from the mapping table is skipped and logged — unrecognized data is never passed downstream.",
+      "how": {
+        "en": "Platforms name the same metric differently: some say views, some say impressions. This layer renames fields against one mapping table, then passes the data on.",
+        "zh": "每个平台对同一个指标叫法不同：有的叫 views，有的叫 impressions。这一层按一张对照表把字段名统一掉，再往下传。"
+      },
+      "fail": {
+        "en": "A field missing from the mapping table is skipped and logged — unrecognized data is never passed downstream.",
+        "zh": "遇到对照表里没有的新字段，这条数据会被跳过并记进日志，不会把认不出的数据往下传。"
+      },
       "code": [
         {
           "c": "const FIELD_MAP = {\n  tiktok: { views: \"impressions\", cost: \"spend\" },\n  meta:   { impressions: \"impressions\", spend: \"spend\" },\n};",
-          "n": "This is the translation list: platform names on the left, the app's shared field names on the right.",
+          "n": {
+            "en": "The mapping table itself: platform names on the left, unified field names on the right.",
+            "zh": "对照表本体：左边是各平台自己的叫法，右边是统一后的字段名。"
+          },
           "risk": null
         },
         {
           "c": "export const normalize = (src, row) =>\n  mapKeys(row, FIELD_MAP[src]);",
-          "n": "This one line swaps each platform's field names into the app's shared names.",
+          "n": {
+            "en": "The whole operation is one line — swap field names per the table.",
+            "zh": "统一动作只有一行——按对照表把字段名换掉。"
+          },
           "risk": null
         }
       ],
       "tradeoff": null,
-      "tourHint": "Stop 3 · Field names get cleaned here, so the later parts do not care where the data came from."
+      "tourHint": {
+        "en": "Stop 3 · Field names get unified here; downstream never cares where data came from.",
+        "zh": "第 3 站 · 字段名在这里统一，下游不用关心数据来自哪个平台。"
+      }
     },
     "redis": {
       "lane": "be",
@@ -134,33 +248,72 @@
       "feeds": [
         "db"
       ],
-      "name": "Redis safety check",
-      "role": "Keeps the same record from being counted twice and slows API calls down so platforms do not block you.",
+      "name": {
+        "en": "Redis cache & rate limit",
+        "zh": "Redis 缓存 & 限速"
+      },
+      "role": {
+        "en": "Drops duplicate data and throttles calls to each platform's API so you don't get banned.",
+        "zh": "去掉重复数据，并控制调用各平台 API 的频率，防止被封。"
+      },
       "impact": [
-        "The same ad record never enters the database twice, so report numbers do not get inflated.",
-        "No API key gets banned for calling too hard — one ban can mean days of missing data."
+        {
+          "en": "The same ad record never enters the database twice, so report numbers don't inflate.",
+          "zh": "同一条广告数据不会重复入库，报表数字不会虚高。"
+        },
+        {
+          "en": "No API key gets banned for calling too hard — one ban can mean days of missing data.",
+          "zh": "不会因为调用太猛被平台封 API key——封一次，数据可能断更好几天。"
+        }
       ],
-      "how": "Each record gets a fingerprint, like a short ID made from its important fields. Redis checks whether that fingerprint was seen before and drops the record if it was. Before every API call, Redis also checks how many calls were already made this hour; over the limit means waiting.",
-      "fail": "If Redis goes down, the app pauses the pull rather than calling platforms too aggressively — losing one hour is safer than getting blocked.",
+      "how": {
+        "en": "Each record gets a fingerprint; Redis checks whether that fingerprint was seen before and drops it if so. Before every API call, the hour's call count is checked — over quota means waiting for the next hour.",
+        "zh": "每条数据先算一个指纹，Redis 查这个指纹出现过没有，出现过就丢弃。同时，每次调平台 API 前先查本小时的调用次数，超额就等到下个小时。"
+      },
+      "fail": {
+        "en": "If Redis goes down, the pipeline pauses rather than running unprotected — hammering APIs with no rate limit is worse than losing an hour.",
+        "zh": "Redis 挂了，管道会暂停而不是继续裸跑——没有限速保护地狂调 API，比停一小时更危险。"
+      },
       "code": [
         {
           "c": "const fp = hash(row.platform + row.ad_id + row.date);\nconst isNew = await redis.set(fp, 1, { NX: true, EX: 86400 });\nif (!isNew) return;",
-          "n": "This keeps repeats out. NX means \"save this only if it has not been seen before\" — if Redis says no, the record is a duplicate.",
+          "n": {
+            "en": "Dedup in three lines. NX means \"write only if never seen\" — a failed write means a duplicate.",
+            "zh": "三行完成去重。NX 的意思是「只有没见过才写入」——写入失败，就说明是重复数据。"
+          },
           "risk": null
         },
         {
           "c": "const used = await redis.incr('quota:' + platform + ':' + hour);\nif (used > LIMIT) await sleepUntilNextHour();",
-          "n": "This is the speed limit: count how many times we called this platform this hour; if it is too many, wait.",
+          "n": {
+            "en": "Rate limiting is just counting: which call of the hour is this; over the line, wait.",
+            "zh": "限速就是数数：本小时第几次调用，过线就等。"
+          },
           "risk": null
         }
       ],
       "tradeoff": {
-        "a": "Redis for repeat checks and call speed limits",
-        "b": "a database unique index alone",
-        "cost": "One more moving part to run and watch.",
-        "when": "At small volume, a database rule is enough and Redis can be removed. At 10+ platforms pulled hourly, Redis earns its keep."
+        "a": {
+          "en": "Redis for dedup and rate limiting",
+          "zh": "用 Redis 做去重和限速"
+        },
+        "b": {
+          "en": "a database unique index alone",
+          "zh": "只靠数据库唯一索引兜底"
+        },
+        "cost": {
+          "en": "One more component to run — extra memory and operational overhead.",
+          "zh": "多养一个组件，多一份内存开销和运维心智。"
+        },
+        "when": {
+          "en": "At small volume (a few thousand rows a day) a unique index is enough and Redis can be cut. At 10+ platforms pulled hourly, the volume justifies it.",
+          "zh": "数据量小（每天几千条）时，数据库唯一索引就够了，Redis 可以整个砍掉。现在是 10+ 平台每小时抓取，量级撑得起它。"
+        }
       },
-      "tourHint": "Stop 4 · Repeat checks and speed limits — this keeps your API keys from getting blocked."
+      "tourHint": {
+        "en": "Stop 4 · Dedup + rate limiting — this keeps your API keys alive.",
+        "zh": "第 4 站 · 去重 + 限速，保住你的 API key。"
+      }
     },
     "db": {
       "lane": "db",
@@ -172,28 +325,67 @@
       "feeds": [
         "dash"
       ],
-      "name": "Database",
-      "role": "Stores the cleaned ad data and gives the dashboard the numbers it asks for.",
+      "name": {
+        "en": "Database",
+        "zh": "Database"
+      },
+      "role": {
+        "en": "Stores the cleaned ad data and serves the Dashboard's queries.",
+        "zh": "存清洗完的广告数据，供 Dashboard 查询。"
+      },
       "impact": [
-        "Every number on the Dashboard comes from here — if it is down, reports go blank.",
-        "Data is stored by day: \"last 7 days\" is fast, \"all of last year\" is slow. That's the current design's boundary."
+        {
+          "en": "Every number on the Dashboard is queried from here — if it's down, reports go blank.",
+          "zh": "Dashboard 的每一个数字都从这里查——它挂了，报表就白屏。"
+        },
+        {
+          "en": "Data is stored by day: \"last 7 days\" is fast, \"all of last year\" is slow. That's the current design's boundary.",
+          "zh": "数据按天存放，查「最近 7 天」很快；查「去年全年」会慢，这是当前方案的边界。"
+        }
       ],
-      "how": "Data cleared by Redis is written row by row into the ads_daily table. Looker Studio connects directly and asks questions like \"what was total spend last week?\" The database answers by adding many saved rows into one chart number.",
-      "fail": "If the database is unreachable, the app waits and tries again later — nothing is lost; the Dashboard shows older data meanwhile.",
+      "how": {
+        "en": "Data cleared by Redis is written row by row into the ads_daily table; Looker Studio connects directly and runs aggregate queries (the kind that sums many rows into one number on a chart).",
+        "zh": "Redis 放行的干净数据一行行写进 ads_daily 表，Looker Studio 直连这张表做聚合查询（就是把很多行加总成图表上一个数字的那种查询）。"
+      },
+      "fail": {
+        "en": "If the database is unreachable, the batch waits in a queue for retry — nothing is lost; the Dashboard shows stale data meanwhile.",
+        "zh": "数据库连不上时，这一批数据先留在队列里等重试，不会丢；期间 Dashboard 显示的是旧数据。"
+      },
       "code": [
         {
           "c": "CREATE TABLE ads_daily (\n  platform    text,\n  ad_id       text,\n  date        date,\n  impressions bigint,\n  spend       numeric,\n  PRIMARY KEY (platform, ad_id, date)\n);",
-          "n": "The whole store is one table. The three-part primary key means one ad can only have one row per day — the final guard against double-counting.",
-          "risk": "⚠ Changing this table's structure (columns, primary key) is the hardest thing in the project to undo — everything is built on it. Back up first."
+          "n": {
+            "en": "The entire store is one table. The three-part primary key guarantees one row per ad per day — the last line of defense for dedup.",
+            "zh": "整个存储就这一张表。主键三件套保证「同一天、同一条广告」只存一行——这是去重的最后一道保险。"
+          },
+          "risk": {
+            "en": "⚠ Changing this table's structure (columns, primary key) is the hardest thing in the project to undo — everything is built on it. Back up first.",
+            "zh": "⚠ 改这张表的结构（加列、改主键）是全项目最难回头的操作——上下游都建在它上面，动之前先备份。"
+          }
         }
       ],
       "tradeoff": {
-        "a": "PostgreSQL",
-        "b": "BigQuery",
-        "cost": "Past hundreds of millions of rows, big dashboard questions can get slow.",
-        "when": "When the team runs \"two years, all platforms\" analyses or rows pass 100M, move to BigQuery. Until then PostgreSQL is cheaper and simpler."
+        "a": {
+          "en": "PostgreSQL",
+          "zh": "PostgreSQL"
+        },
+        "b": {
+          "en": "BigQuery",
+          "zh": "BigQuery"
+        },
+        "cost": {
+          "en": "Past hundreds of millions of rows, large aggregate queries struggle.",
+          "zh": "数据涨到亿级行之后，大范围聚合查询会吃力。"
+        },
+        "when": {
+          "en": "When the team runs \"two years, all platforms\" analyses or rows pass 100M, move to BigQuery. Until then PostgreSQL is cheaper and simpler.",
+          "zh": "当市场团队开始跑「跨两年、全平台」这类大分析，或行数过亿时，迁去 BigQuery。在那之前，PostgreSQL 更便宜也更简单。"
+        }
       },
-      "tourHint": "Stop 5 · Where the data finally lives — every Dashboard number comes from here."
+      "tourHint": {
+        "en": "Stop 5 · Where the data finally lives — every Dashboard number is queried from here.",
+        "zh": "第 5 站 · 数据的最终存放处，Dashboard 的每个数字都从这里查。"
+      }
     },
     "dash": {
       "lane": "fe",
@@ -203,17 +395,160 @@
         "db"
       ],
       "feeds": [],
-      "name": "BI Dashboard",
-      "role": "Lets the marketing team see spend, CTR, and CPA directly — no SQL, no waiting for exports.",
+      "name": {
+        "en": "BI Dashboard",
+        "zh": "BI Dashboard"
+      },
+      "role": {
+        "en": "Lets the marketing team see spend, CTR, and CPA directly — no SQL, no waiting for exports.",
+        "zh": "让市场团队直接看 spend、CTR、CPA——不用会 SQL，也不用等人导表。"
+      },
       "impact": [
-        "The team self-serves; you never manually export a weekly report again.",
-        "This part is bought, not built — zero lines of frontend code."
+        {
+          "en": "The team self-serves; you never manually export a weekly report again.",
+          "zh": "市场团队自助看数，你从此不用再手动导表发周报。"
+        },
+        {
+          "en": "This part is bought, not built — zero lines of frontend code.",
+          "zh": "这一块是「买现成」而不是「自己造」——一行前端代码都没写。"
+        }
       ],
-      "how": "Looker Studio connects straight to PostgreSQL. You build charts by dragging fields around; Looker writes the database questions for you.",
-      "fail": "When a chart errors, the problem is almost always earlier in the flow — check whether today's data reached the Database before blaming the chart.",
+      "how": {
+        "en": "Looker Studio connects straight to PostgreSQL. You configure charts by drag-and-drop; it generates the queries.",
+        "zh": "Looker Studio 直连 PostgreSQL。你在图形界面里拖拽配置图表，它自动生成查询语句去取数。"
+      },
+      "fail": {
+        "en": "When a chart errors, the problem is almost always upstream — check whether today's data is in the Database before suspecting the chart config.",
+        "zh": "图表报错时，问题几乎都在上游——先看 Database 里有没有当天的数据，再怀疑图表配置。"
+      },
       "code": null,
       "tradeoff": null,
-      "tourHint": "Stop 6 · The team checks numbers here themselves — this is the visible payoff."
+      "tourHint": {
+        "en": "Stop 6 · The team self-serves here — the pipeline closes its loop.",
+        "zh": "第 6 站 · 市场团队在这里自助看数，流水线到此闭环。"
+      }
+    }
+  },
+  "glossary": {
+    "API": {
+      "short": {
+        "en": "An agreed way for two programs to talk to each other.",
+        "zh": "两个程序之间约定好的对话方式。"
+      }
+    },
+    "cron": {
+      "short": {
+        "en": "A timer that runs a task on a fixed schedule — here, on the hour, every hour.",
+        "zh": "按固定时间表自动跑任务的定时器——在这里是每小时整点跑一次。"
+      }
+    },
+    "cronjob": {
+      "short": {
+        "en": "A timer that runs a task on a fixed schedule — here, on the hour, every hour.",
+        "zh": "按固定时间表自动跑任务的定时器——在这里是每小时整点跑一次。"
+      }
+    },
+    "定时任务": {
+      "short": {
+        "en": "A timer that runs a task on a fixed schedule — here, on the hour, every hour.",
+        "zh": "按固定时间表自动跑任务的定时器——在这里是每小时整点跑一次。"
+      }
+    },
+    "Redis": {
+      "short": {
+        "en": "A very fast scratchpad memory used here to spot duplicates and count API calls.",
+        "zh": "一块速度极快的\"草稿纸内存\",这里用它来认出重复数据、数 API 调用次数。"
+      }
+    },
+    "PostgreSQL": {
+      "short": {
+        "en": "A battle-tested database — the filing cabinet where the cleaned ad data finally lives.",
+        "zh": "久经考验的数据库——清洗后的广告数据最终存放的档案柜。"
+      }
+    },
+    "fingerprint": {
+      "short": {
+        "en": "A short code computed from a record; identical records always get the identical code, so duplicates are easy to spot.",
+        "zh": "从一条数据算出的短代号;同样的数据永远算出同样的代号,一比对就知道是不是重复。"
+      }
+    },
+    "指纹": {
+      "short": {
+        "en": "A short code computed from a record; identical records always get the identical code, so duplicates are easy to spot.",
+        "zh": "从一条数据算出的短代号;同样的数据永远算出同样的代号,一比对就知道是不是重复。"
+      }
+    },
+    "rate limiting": {
+      "short": {
+        "en": "Deliberately slowing down calls to a platform so it does not block your account.",
+        "zh": "故意放慢调用平台的频率,免得账号被平台拉黑。"
+      }
+    },
+    "限速": {
+      "short": {
+        "en": "Deliberately slowing down calls to a platform so it does not block your account.",
+        "zh": "故意放慢调用平台的频率,免得账号被平台拉黑。"
+      }
+    },
+    "dedup": {
+      "short": {
+        "en": "Making sure the same record is never counted twice.",
+        "zh": "保证同一条数据绝不被算两次。"
+      }
+    },
+    "去重": {
+      "short": {
+        "en": "Making sure the same record is never counted twice.",
+        "zh": "保证同一条数据绝不被算两次。"
+      }
+    },
+    "SQL": {
+      "short": {
+        "en": "The standard language for asking a database questions.",
+        "zh": "向数据库提问用的标准语言。"
+      }
+    },
+    "BI": {
+      "short": {
+        "en": "Business Intelligence — ready-made charting tools the team uses to look at numbers without writing code.",
+        "zh": "商业智能——现成的看数工具,团队不写代码就能看图表。"
+      }
+    },
+    "BI Dashboard": {
+      "short": {
+        "en": "Business Intelligence — ready-made charting tools the team uses to look at numbers without writing code.",
+        "zh": "商业智能——现成的看数工具,团队不写代码就能看图表。"
+      }
+    },
+    "plugin": {
+      "short": {
+        "en": "A small add-on piece, one per platform here, all built to the same shape so they are interchangeable.",
+        "zh": "小小的外接零件,这里每个平台一个,长得一模一样所以可以互换。"
+      }
+    },
+    "插件": {
+      "short": {
+        "en": "A small add-on piece, one per platform here, all built to the same shape so they are interchangeable.",
+        "zh": "小小的外接零件,这里每个平台一个,长得一模一样所以可以互换。"
+      }
+    },
+    "quota": {
+      "short": {
+        "en": "The number of calls a platform allows you; run out and you are locked out for a while.",
+        "zh": "平台允许你调用的次数;用光了就要被关在门外一阵子。"
+      }
+    },
+    "额度": {
+      "short": {
+        "en": "The number of calls a platform allows you; run out and you are locked out for a while.",
+        "zh": "平台允许你调用的次数;用光了就要被关在门外一阵子。"
+      }
+    },
+    "serverless": {
+      "short": {
+        "en": "Renting seconds of computing instead of a whole server — you pay only when your code actually runs.",
+        "zh": "不租整台服务器,只租\"计算的秒数\"——代码真正跑的时候才花钱。"
+      }
     }
   },
   "diff": {
