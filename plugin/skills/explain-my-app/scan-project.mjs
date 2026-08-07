@@ -25,7 +25,7 @@
 import { basename, dirname, extname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  existsSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync,
+  existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync,
 } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
@@ -400,6 +400,8 @@ async function main() {
     },
   };
 
+  // 输出目录(如 .ue/)可能还不存在——先建再写,新项目第一次扫描不该崩
+  mkdirSync(dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, JSON.stringify(output, null, 2), 'utf-8');
   process.stderr.write(
     `scan-project: files=${files.length} stack=[${stack.map(s => s.tool).join(', ')}] complexity=${output.estimatedComplexity}\n`,

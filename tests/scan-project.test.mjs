@@ -142,3 +142,13 @@ test('docker-compose 里的 postgres/redis 服务要被认出来,归数据库', 
   assert.equal(byTool['PostgreSQL'], 'db');
   assert.equal(byTool['Redis'], 'db');
 });
+
+// 回归测试:2026-07-29 分析 HolmesGPT 时踩到——输出目录(.ue/)不存在时扫描器直接崩
+test('输出目录不存在时,扫描器要自己创建它,而不是崩掉', () => {
+  const root = mkdtempSync(join(tmpdir(), 'ue-scan-mkdir-'));
+  writeFileSync(join(root, 'package.json'), '{"name":"x"}', 'utf-8');
+  const out = join(root, '.ue', 'scan-result.json');   // .ue 目录故意不建
+  const res = spawnSync('node', [SCRIPT, root, out], { encoding: 'utf-8' });
+  assert.equal(res.status, 0, `必须成功,stderr: ${res.stderr}`);
+  assert.ok(JSON.parse(readFileSync(out, 'utf-8')).scriptCompleted);
+});
