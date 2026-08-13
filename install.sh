@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Understand Everything installer (macOS / Linux) — for non-Claude agents.
-# Claude Code users don't need this: use /plugin marketplace add instead.
+# Understand Everything Agent Skill installer (macOS / Linux).
 #
 # Usage:
 #   ./install.sh <platform>            Install skills for <platform>
@@ -26,7 +25,8 @@ SKILL_NAME="explain-my-app"
 # 平台表:平台名|技能目录(每个技能一个快捷方式链进去)
 platforms_table() {
   cat <<EOF
-codex|$HOME/.agents/skills
+codex|${CODEX_HOME:-$HOME/.codex}/skills
+claude|$HOME/.claude/skills
 gemini|$HOME/.agents/skills
 opencode|$HOME/.agents/skills
 vscode|$HOME/.copilot/skills

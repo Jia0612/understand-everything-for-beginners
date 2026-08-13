@@ -51,6 +51,14 @@ Open the local dashboard and follow the guided tour
 
 ## Quick Start
 
+### Paste into a skills-compatible agent
+
+```text
+Install and use the Agent Skill from https://github.com/Jia0612/understand-everything-for-beginners
+```
+
+Direct installation requires an Agent Skills-compatible client with GitHub and filesystem access. A chat product without those capabilities cannot install a repository merely from pasted text; use its supported extension mechanism or install locally with `install.sh`.
+
 ### Claude Code
 
 ```text
